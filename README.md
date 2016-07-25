@@ -75,3 +75,30 @@ Take Telegram input; do things like
 * some combination of the above
 
 This will need tables such as the TelegramUser (distinct from the user), the TelegramGroup.
+
+
+## Some sketches
+
+### The real life situation
+
+    zorggroep 1<--->1 Telegram groep N<--->N Telegram users
+        1
+        |
+        1
+    Schedule  1<---> Potential shifts (weekday, name)
+        1
+        |
+        N
+    Mutation N<--->1/0 Telegram user
+
+### The database table
+
+    Schedule          N<--->N Telegram users
+    - Telegram group          - name
+        1                     - telegram_user_id
+        |                  /
+        N           ______/
+    Mutation N     /     |
+    - mutator     1      /
+    - new cover null or 1
+    - shift (somehow, data model to be determined)
