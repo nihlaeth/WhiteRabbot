@@ -36,7 +36,7 @@ class Mutation(BASE):
     mutator = Column(ForeignKey)
     new_user_id = Column(ForeignKey)
 
-                
+
 # The real life situation
 #
 # zorggroep 1<--->1 Telegram groep N<--->N Telegram users
@@ -60,7 +60,6 @@ class Mutation(BASE):
 # - mutator     1      /
 # - new cover null or 1
 # - shift (somehow, data model to be determined)
-                                          
 
 
 engine = create_engine('sqlite:///rabbot.sqlite', echo=False)
