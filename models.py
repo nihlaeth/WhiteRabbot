@@ -6,5 +6,5 @@ class Shift:
         self.start = start
         self.stop = stop
 
-    def is_active(self):
-        return self.start <= datetime.now() < self.stop
+    def is_active(self, at: datetime) -> bool:
+        return self.start <= at < self.stop
