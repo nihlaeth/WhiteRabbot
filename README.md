@@ -22,16 +22,11 @@ instead.
 
 This layer limits the data to states that are possible.
 
-First, handle only today, and return a Shift object.
+First, handle standalone Shift objects.
 
-* What shift is now?
-* What shift is there at time X today?
-* What shift is there at or after time X?
-
-Then extend this to arbitrary days (daily recurrence rules). More complicated
-recurrence can wait.
-
-* What shift is there at datetime X?
+* when does it start?
+* when does it stop?
+* is it active at time X?
 
 Then introduce the notion of people, and a shift being covered.
 
@@ -47,6 +42,20 @@ Next, introduce the notion of Mutations.
 * Add a mutation to shift X saying it's empty again. Now who?
 * Add a mutation to shift Y saying Wimpje takes it. Now who is covering X? Y?
 
+Now, let's introduce recurrence rules.
+
+* Return None if there isn't a shift at time T
+* Return a shift if there is one
+* What is the next shift at or after time T?
+* What is the next shift at or before time T?
+* May I have a list of shifts between T1 and T2?
+
+A bunch of recurrence rules together form a Schedule.
+
+* What shift is now?
+* What shift is there at time X today?
+* What shift is there at or after time X?
+
 
 ### The API layer
 
@@ -54,9 +63,9 @@ This layer limits the user to operations and queries that are allowed, and that
 leave the data in states that are allowed.
 
 At this point we'll probably introduce the notions of a requesting User (who
-must match the Person who currently owns the task) and a Schedule (N Users
-belong to one Schedule, they can retrieve Shifts from that Schedule,
-Modifications must pertain to users and shifts from that Schedule)
+must match the Person who currently owns the task) and link the Schedule to the
+Shifts. (N Users belong to one Schedule, they can retrieve Shifts from that
+Schedule, Modifications must pertain to users and shifts from that Schedule.)
 
 
 ### The Telegram interface layer
