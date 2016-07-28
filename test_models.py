@@ -28,7 +28,6 @@ class TestShift:
             (NOW + hours(1), NOW + hours(2), NOW, False) , # future
         ]
     )
-
     def test_is_active(self, start, stop, at, expected):
         """Shift.is_active handles shifts before, after, and containing `at`"""
         shift = models.Shift(start, stop)
