@@ -13,6 +13,7 @@ def hours(hours: int) -> timedelta:
 
 
 class TestShift:
+
     def test_creation(self):
         """I can create a shift using two datetimes."""
         shift = Shift(NOW, NOW + hours(1))
@@ -27,7 +28,8 @@ class TestShift:
             (NOW + hours(1), NOW + hours(2), NOW, False) , # future
         ]
     )
+
     def test_is_active(self, start, stop, at, expected):
-        """Test is_active"""
+        """Shift.is_active handles shifts before, after, and containing `at`"""
         shift = Shift(start, stop)
         assert shift.is_active(at) == expected
