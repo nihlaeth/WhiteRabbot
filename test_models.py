@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from models import Shift
+import models
 
 
 NOW = datetime.now()
@@ -14,9 +14,9 @@ def hours(hours: int) -> timedelta:
 
 class TestShift:
 
-    def test_creation(self):
+    def test_init(self):
         """I can create a shift using two datetimes."""
-        shift = Shift(NOW, NOW + hours(1))
+        shift = models.Shift(NOW, NOW + hours(1))
         assert shift.start == NOW
         assert shift.stop == NOW + hours(1)
 
@@ -31,5 +31,13 @@ class TestShift:
 
     def test_is_active(self, start, stop, at, expected):
         """Shift.is_active handles shifts before, after, and containing `at`"""
-        shift = Shift(start, stop)
+        shift = models.Shift(start, stop)
         assert shift.is_active(at) == expected
+
+
+class TestPerson:
+
+    def test_init(self):
+        """I can create a Person"""
+        user = models.Person(name='Alice van Wonderland')
+        assert user.name == 'Alice van Wonderland'

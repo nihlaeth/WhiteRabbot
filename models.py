@@ -2,7 +2,7 @@ from datetime import datetime
 
 
 class Shift:
-    """One specific shift where somebody should be working.
+    """One specific shift where one Person should be working.
 
     If there is an evening shift from 17:00 to 19:00 every day, this might be
     the evening shift of 2016-12-31.
@@ -15,3 +15,10 @@ class Shift:
     def is_active(self, at: datetime) -> bool:
         """Is this shift active at time `at`?"""
         return self.start <= at < self.stop
+
+
+class Person:
+    """Somebody who works, and may cover a shift."""
+
+    def __init__(self, name: str) -> None:
+        self.name = name
