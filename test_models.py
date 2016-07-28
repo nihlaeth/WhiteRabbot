@@ -38,5 +38,5 @@ class TestPerson:
 
     def test_init(self):
         """I can create a Person"""
-        user = models.Person(name='Alice van Wonderland')
-        assert user.name == 'Alice van Wonderland'
+        person = models.Person(name='Alice van Wonderland')
+        assert person.name == 'Alice van Wonderland'
