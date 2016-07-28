@@ -20,11 +20,11 @@ class TestShift:
         assert shift.stop == NOW + hours(1)
 
     @pytest.mark.parametrize(
-        'start,stop,at,expected',
+        'start, stop, at, expected',
         [
-            (NOW - hours(1), NOW, NOW, False),  # past
-            (NOW, NOW + hours(1), NOW, True),  # present
-            (NOW + hours(1), NOW + hours(2), NOW, False),  # future
+            (NOW - hours(1), NOW           , NOW, False) , # past
+            (NOW           , NOW + hours(1), NOW, True)  , # present
+            (NOW + hours(1), NOW + hours(2), NOW, False) , # future
         ]
     )
     def test_is_active(self, start, stop, at, expected):
