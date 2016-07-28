@@ -5,23 +5,29 @@ import pytest
 from models import Shift
 
 
-@pytest.fixture
-def now():
-    return datetime.now()
+NOW = datetime.now()
 
 
-@pytest.fixture
-def one_hour():
-    return timedelta(hours=1)
+def hours(hours: int) -> timedelta:
+    return timedelta(hours=hours)
 
 
 class TestShift:
-    def test_creation(self, now, one_hour):
+    def test_creation(self):
         """I can create a shift using two datetimes."""
-        shift = Shift(now, now + one_hour)
-        assert shift.start == now
-        assert shift.stop == now + one_hour
+        shift = Shift(NOW, NOW + hours(1))
+        assert shift.start == NOW
+        assert shift.stop == NOW + hours(1)
 
-    def test_is_active(self):
-        """A shift knows whether it is active."""
-        pass
+    @pytest.mark.parametrize(
+        'start,stop,expected',
+        [
+            (NOW - hours(1), NOW, False),  # past
+            (NOW, NOW + hours(1), True),  # present
+            (NOW + hours(1), NOW + hours(2), False),  # future
+        ]
+    )
+    def test_is_active(self, start, stop, expected):
+        """Test is_active"""
+        shift = Shift(start, stop)
+        assert shift.is_active() == expected
