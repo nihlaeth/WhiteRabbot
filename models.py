@@ -1,6 +1,16 @@
 from datetime import datetime
 
 
+class Person:
+    """Somebody who works, and may cover a shift."""
+
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+
+defaultPerson = Person('DEFAULT')
+
+
 class Shift:
     """One specific shift where one Person should be working.
 
@@ -17,8 +27,4 @@ class Shift:
         return self.start <= at < self.stop
 
 
-class Person:
-    """Somebody who works, and may cover a shift."""
 
-    def __init__(self, name: str) -> None:
-        self.name = name
