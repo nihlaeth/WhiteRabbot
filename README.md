@@ -24,37 +24,37 @@ This layer limits the data to states that are possible.
 
 First, handle standalone Shift objects.
 
-* when does it start?
-* when does it stop?
-* is it active at time X?
+- [x]  when does it start?
+- [x]  when does it stop?
+- [x]  is it active at time X?
 
 Then introduce the notion of people, and a shift being covered.
 
-* Who is covering shift X? => regular person
-s Who is covering shift X? => nobody
-* Who is covering shift X? => Oskar
+- [x]  Who is covering shift X? => regular person
+- [x]  Who is covering shift X? => nobody
+- [x]  Who is covering shift X? => Oskar
 
 Next, introduce the notion of Mutations.
 
-* Who is covering shift X? => default person
-* Add a mutation to shift X saying it's empty. Now who is covering it?
-* Add a mutation to shift X saying Oskar takes it. Now who is covering it?
-* Add a mutation to shift X saying it's empty again. Now who?
-* Add a mutation to shift Y saying Wimpje takes it. Now who is covering X? Y?
+- [ ]  Who is covering shift X? => default person
+- [ ]  Add a mutation to shift X saying it's empty. Now who is covering it?
+- [ ]  Add a mutation to shift X saying Oskar takes it. Now who is covering it?
+- [ ]  Add a mutation to shift X saying it's empty again. Now who?
+- [ ]  Add a mutation to shift Y saying Wimpje takes it. Now who is covering X? Y?
 
 Now, let's introduce recurrence rules.
 
-* Return None if there isn't a shift at time T
-* Return a shift if there is one
-* What is the next shift at or after time T?
-* What is the next shift at or before time T?
-* May I have a list of shifts between T1 and T2?
+- [ ]  Return None if there isn't a shift at time T
+- [ ]  Return a shift if there is one
+- [ ]  What is the next shift at or after time T?
+- [ ]  What is the next shift at or before time T?
+- [ ]  May I have a list of shifts between T1 and T2?
 
 A bunch of recurrence rules together form a Schedule.
 
-* What shift is now?
-* What shift is there at time X today?
-* What shift is there at or after time X?
+- [ ]  What shift is now?
+- [ ]  What shift is there at time X today?
+- [ ]  What shift is there at or after time X?
 
 
 ### The API layer
