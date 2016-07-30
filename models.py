@@ -55,7 +55,7 @@ class Shift(BASE):
     schedule = relationship("Schedule", back_populates="shifts")
     name = Column(String)
     ordering = Column(Integer)
-    mutations = relationship("Mutation", back_populates="shifts")
+    mutations = relationship("Mutation", back_populates="shift")
 
 class Mutation(BASE):
     """Mutations to the regular schedule."""
@@ -69,12 +69,12 @@ class Mutation(BASE):
     mutator_id = Column(Integer, ForeignKey('users.user_id'))
     mutator = relationship(
         "User",
-        back_populates="mutations",
+        # back_populates="mutations",
         foreign_keys=[mutator_id])
     new_user_id = Column(Integer, ForeignKey('users.user_id'))
     new_user = relationship(
         "User",
-        back_populates="mutations",
+        # back_populates="mutations",
         foreign_keys=[new_user_id])
 
 class Schedule(BASE):
@@ -85,18 +85,18 @@ class Schedule(BASE):
     admin_id = Column(Integer, ForeignKey('users.user_id'))
     admin = relationship(
         "User",
-        back_populates="schedules",
+        # back_populates="schedules",
         foreign_keys=[admin_id])
-    mutations = relationship("Mutation", back_populates="schedules")
-    shifts = relationship("Shift", back_populates="schedules")
+    mutations = relationship("Mutation", back_populates="schedule")
+    shifts = relationship("Shift", back_populates="schedule")
     users = relationship(
         "User",
         secondary=association_table,
         back_populates="schedules")
 
-
-engine = create_engine('sqlite:///:memory:', echo=True)
-SESSION.configure(bind=engine)
-BASE.metadata.create_all(engine)
-with SessionScope() as session:
-    pass
+if __name__ == "__main__":
+    engine = create_engine('sqlite:///:memory:', echo=True)
+    SESSION.configure(bind=engine)
+    BASE.metadata.create_all(engine)
+    with SessionScope() as session:
+        pass
