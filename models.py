@@ -94,9 +94,7 @@ class Schedule(BASE):
         secondary=association_table,
         back_populates="schedules")
 
-if __name__ == "__main__":
+def init_db():
     engine = create_engine('sqlite:///:memory:', echo=True)
     SESSION.configure(bind=engine)
     BASE.metadata.create_all(engine)
-    with SessionScope() as session:
-        pass
