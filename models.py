@@ -1,7 +1,8 @@
-from sqlalchemy import ForeignKey, Column, Integer, String
+"""Database models."""
+from sqlalchemy import ForeignKey, Column, Integer, DateTime, String
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 
 SESSION = sessionmaker()
 BASE = declarative_base()
@@ -27,16 +28,47 @@ class SessionScope(object):
 
 
 # pylint: disable=no-init
+
+class User(BASE):
+    """Usertable."""
+    __tablename__ = 'users'
+    user_id = Column(Integer, primary_key=True)
+    telegram_user_id = Column(Integer)
+    name = Column(String)
+
+class Shift(BASE):
+    """Shift definitions."""
+    __tablename__ = 'shifts'
+    shift_id = Column(Integer, primary_key=True)
+    schedule_id = Column(ForeignKey('schedules.schedule_id'))
+    schedule = relationship("Schedule", back_populates="shifts")
+    name = Column(String)
+    ordering = Column(Integer)
+    mutations = relationship("Mutation", back_populates="shifts")
+
 class Mutation(BASE):
     """Mutations to the regular schedule."""
     __tablename__ = 'mutations'
     mutation_id = Column(Integer, primary_key=True)
+    schedule_id = Column(ForeignKey('schedules.schedule_id'))
+    schedule = relationship("Schedule", back_populates="mutations")
     shift_date = Column(DateTime)
-    shift_id = Column(ForeignKey)
-    mutator = Column(ForeignKey)
-    new_user_id = Column(ForeignKey)
+    shift_id = Column(ForeignKey('shifts.shift_id'))
+    shift = relationship("Shift", back_populates="mutations")
+    mutator = Column(ForeignKey('users.user_id'))
+    new_user_id = Column(ForeignKey('users.user_id'))
 
-engine = create_engine('sqlite:///rabbot.sqlite', echo=False)
+class Schedule(BASE):
+    """Schedule for users and mutations to belong to."""
+    __tablename__ = 'schedules'
+    schedule_id = Column(Integer, primary_key=True)
+    telegram_group_id = Column(Integer)
+    admin_id = Column(ForeignKey('users.user_id'))
+    mutations = relationship("Mutation", back_populates="schedules")
+    shifts = relationship("Shift", back_populates="schedules")
+
+# pylint: disable=invalid-name
+engine = create_engine('sqlite:///:memory:', echo=True)
 SESSION.configure(bind=engine)
 BASE.metadata.create_all(engine)
 with SessionScope() as session:
