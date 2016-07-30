@@ -1,4 +1,5 @@
 """Database models."""
+from sqlalchemy.schema import Table
 from sqlalchemy import ForeignKey, Column, Integer, DateTime, String
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -27,7 +28,13 @@ class SessionScope(object):
             self._session.close()
 
 
-# pylint: disable=no-init
+# pylint: disable=no-init,invalid-name
+
+association_table = Table(
+    'association',
+    BASE.metadata,
+    Column('schedule_id', Integer, ForeignKey('schedules.schedule_id')),
+    Column('user_id', Integer, ForeignKey('users.user_id')))
 
 class User(BASE):
     """Usertable."""
@@ -35,12 +42,16 @@ class User(BASE):
     user_id = Column(Integer, primary_key=True)
     telegram_user_id = Column(Integer)
     name = Column(String)
+    schedules = relationship(
+        "Schedule",
+        secondary=association_table,
+        back_populates="users")
 
 class Shift(BASE):
     """Shift definitions."""
     __tablename__ = 'shifts'
     shift_id = Column(Integer, primary_key=True)
-    schedule_id = Column(ForeignKey('schedules.schedule_id'))
+    schedule_id = Column(Integer, ForeignKey('schedules.schedule_id'))
     schedule = relationship("Schedule", back_populates="shifts")
     name = Column(String)
     ordering = Column(Integer)
@@ -50,24 +61,40 @@ class Mutation(BASE):
     """Mutations to the regular schedule."""
     __tablename__ = 'mutations'
     mutation_id = Column(Integer, primary_key=True)
-    schedule_id = Column(ForeignKey('schedules.schedule_id'))
+    schedule_id = Column(Integer, ForeignKey('schedules.schedule_id'))
     schedule = relationship("Schedule", back_populates="mutations")
     shift_date = Column(DateTime)
-    shift_id = Column(ForeignKey('shifts.shift_id'))
+    shift_id = Column(Integer, ForeignKey('shifts.shift_id'))
     shift = relationship("Shift", back_populates="mutations")
-    mutator = Column(ForeignKey('users.user_id'))
-    new_user_id = Column(ForeignKey('users.user_id'))
+    mutator_id = Column(Integer, ForeignKey('users.user_id'))
+    mutator = relationship(
+        "User",
+        back_populates="mutations",
+        foreign_keys=[mutator_id])
+    new_user_id = Column(Integer, ForeignKey('users.user_id'))
+    new_user = relationship(
+        "User",
+        back_populates="mutations",
+        foreign_keys=[new_user_id])
 
 class Schedule(BASE):
     """Schedule for users and mutations to belong to."""
     __tablename__ = 'schedules'
     schedule_id = Column(Integer, primary_key=True)
     telegram_group_id = Column(Integer)
-    admin_id = Column(ForeignKey('users.user_id'))
+    admin_id = Column(Integer, ForeignKey('users.user_id'))
+    admin = relationship(
+        "User",
+        back_populates="schedules",
+        foreign_keys=[admin_id])
     mutations = relationship("Mutation", back_populates="schedules")
     shifts = relationship("Shift", back_populates="schedules")
+    users = relationship(
+        "User",
+        secondary=association_table,
+        back_populates="schedules")
 
-# pylint: disable=invalid-name
+
 engine = create_engine('sqlite:///:memory:', echo=True)
 SESSION.configure(bind=engine)
 BASE.metadata.create_all(engine)
