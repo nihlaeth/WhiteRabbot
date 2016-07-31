@@ -26,7 +26,7 @@ class Shift:
             ) -> None:
         self.start = start
         self.stop = stop
-        self.mutations = []
+        self.mutations = []  # type: List[Mutation]
 
     @property
     def cover(self) -> Optional[Person]:
@@ -90,6 +90,6 @@ class Shift:
 class Mutation:
     """A change in the Person who covers a Shift"""
 
-    def __init__(self, shift: Shift, new_person: Person) -> None:
+    def __init__(self, shift: Shift, new_person: Optional[Person]) -> None:
         self.shift = shift
         self.new_person = new_person
