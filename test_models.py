@@ -80,3 +80,14 @@ class TestPerson:
         """I can create a Person"""
         person = models.Person(name='Alice van Wonderland')
         assert person.name == 'Alice van Wonderland'
+
+
+class TestMutation:
+
+    def test_init(self):
+        """I can create a Mutation"""
+        shift = models.Shift(NOW, NOW)
+        alice = models.Person(name='Alice van Wonderland')
+        mutation = models.Mutation(shift=shift, new_person=alice)
+        assert mutation.shift == shift
+        assert mutation.new_person == alice

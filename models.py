@@ -73,3 +73,11 @@ class Shift:
             return
         # The shift is already covered by somebody else, you can't just take it
         raise self.AlreadyCovered  # type: ignore  # silence a mypy bug
+
+
+class Mutation:
+    """A change in the Person who covers a Shift"""
+
+    def __init__(self, shift: Shift, new_person: Person) -> None:
+        self.shift = shift
+        self.new_person = new_person
