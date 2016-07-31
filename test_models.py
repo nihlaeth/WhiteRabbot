@@ -65,34 +65,6 @@ class TestShift:
         shift.remove_cover()
         assert not shift.is_covered()
 
-    def test_set_cover_to_uncovered_shift(self):
-        """You can specify a Person as a shift's cover"""
-        shift = models.Shift(NOW, NOW)
-        shift.remove_cover()
-        alice = models.Person(name='Alice van Wonderland')
-        shift.set_cover(alice)
-        assert shift.is_covered()
-
-    def test_set_cover_setting_different_cover(self):
-        """Trying to cover a shift already covered by another person raises
-        Shift.AlreadyCovered.
-        """
-        shift = models.Shift(NOW, NOW)
-        shift.remove_cover()
-        alice = models.Person(name='Alice van Wonderland')
-        dormouse = models.Person(name='Dor Mouse')
-        shift.set_cover(alice)
-        with pytest.raises(models.Shift.AlreadyCovered):
-            shift.set_cover(dormouse)
-
-    def test_set_cover_readding_same_cover_does_nothing(self):
-        alice = models.Person(name='Alice van Wonderland')
-        shift = models.Shift(NOW, NOW)
-        shift.remove_cover()
-        shift.set_cover(alice)
-        shift.set_cover(alice)
-        assert shift.cover == alice
-
 
 class TestPerson:
 

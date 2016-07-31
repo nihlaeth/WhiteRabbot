@@ -51,41 +51,6 @@ class Shift:
         """Is there somebody covering this shift?"""
         return self.cover is not None
 
-    class AlreadyCovered(Exception):
-        """Raised if the shift is already covered (by somebody else)"""
-        pass
-
-    def set_cover(self, cover: Person) -> None:
-        """Add cover if the new cover makes sense
-
-        Parameters
-        ----------
-        cover: Person
-            The person who will be covering this shift
-
-        Returns
-        -------
-        None
-
-        Side effects
-        ------------
-        The cover person will be set as the shift's cover.
-
-        Raises
-        ------
-        Shift.AlreadyCovered
-            if the shift already has somebody else as cover
-        """
-        if self.cover is None:
-            # The shift is free, cover it and return
-            self.cover = cover
-            return
-        if self.cover == cover:
-            # The shift is already covered by this person, do nothing
-            return
-        # The shift is already covered by somebody else, you can't just take it
-        raise self.AlreadyCovered  # type: ignore  # silence a mypy bug
-
 
 class Mutation:
     """A change in the Person who covers a Shift"""
