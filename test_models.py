@@ -33,6 +33,26 @@ class TestShift:
         shift = models.Shift(start, stop)
         assert shift.is_active(at) == expected
 
+    class Test_cover:
+
+        def test_default_cover_is_defaultPerson(self):
+            """A pristine shift is covered by defaultPerson"""
+            shift = models.Shift(NOW, NOW)
+            assert shift.cover == models.defaultPerson
+
+        def test_cover_setter_to_None(self):
+            """A shift's cover can be set to None"""
+            shift = models.Shift(NOW, NOW)
+            shift.cover = None
+            assert shift.cover is None
+
+        def test_cover_setter_to_person(self):
+            """A shift's cover can be set to a person"""
+            shift = models.Shift(NOW, NOW)
+            alice = models.Person('Alice')
+            shift.cover = alice
+            assert shift.cover == alice
+
     def test_a_normal_shift_is_covered(self):
         """By default, a shift is covered by defaultPerson"""
         shift = models.Shift(NOW, NOW)

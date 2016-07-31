@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 
 class Person:
@@ -22,10 +23,21 @@ class Shift:
             self,
             start: datetime,
             stop: datetime,
-            cover: Person=defaultPerson) -> None:
+            ) -> None:
         self.start = start
         self.stop = stop
-        self.cover = cover
+        self.mutations = []
+
+    @property
+    def cover(self) -> Optional[Person]:
+        if not self.mutations:
+            return defaultPerson
+        else:
+            return self.mutations[-1].new_person
+
+    @cover.setter
+    def cover(self, x: Optional[Person]) -> None:
+        self.mutations.append(Mutation(shift=self, new_person=x))
 
     def is_active(self, at: datetime) -> bool:
         """Is this shift active at time `at`?"""
