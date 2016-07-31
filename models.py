@@ -72,4 +72,4 @@ class Shift:
             # The shift is already covered by this person, do nothing
             return
         # The shift is already covered by somebody else, you can't just take it
-        raise self.AlreadyCovered
+        raise self.AlreadyCovered  # type: ignore  # silence a mypy bug
