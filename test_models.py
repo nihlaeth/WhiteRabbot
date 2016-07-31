@@ -16,4 +16,6 @@ def test_some_random_models():
             shift_date=None,
             shift=shift,
             mutator=user)
+        session.add_all([user, schedule, shift, mutation])
+        session.flush()
         assert_equals(schedule.shifts[0].name, "first shift")
