@@ -88,7 +88,10 @@ class Schedule(BASE):
         # back_populates="schedules",
         foreign_keys=[admin_id])
     mutations = relationship("Mutation", back_populates="schedule")
-    shifts = relationship("Shift", back_populates="schedule")
+    shifts = relationship(
+        "Shift",
+        back_populates="schedule",
+        order_by="asc(Shift.ordering)")
     users = relationship(
         "User",
         secondary=association_table,
