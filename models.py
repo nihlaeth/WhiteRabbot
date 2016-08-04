@@ -58,3 +58,11 @@ class Mutation:
     def __init__(self, shift: Shift, new_person: Optional[Person]) -> None:
         self.shift = shift
         self.new_person = new_person
+
+    def __eq__(self, other):
+        return (
+            type(other) is Mutation
+            and type(self) is Mutation
+            and self.shift == other.shift
+            and self.new_person == other.new_person
+        )

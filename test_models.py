@@ -56,6 +56,20 @@ class TestShift:
             shift.cover = alice
             assert shift.cover == alice
 
+        def test_setting_cover_creates_mutations(self, shift):
+            alice = models.Person('Alice')
+            brian = models.Person('Brian')
+            shift.remove_cover()
+            shift.cover = alice
+            shift.cover = brian
+            shift.remove_cover()
+            assert shift.mutations == [
+                models.Mutation(shift=shift, new_person=None),
+                models.Mutation(shift=shift, new_person=alice),
+                models.Mutation(shift=shift, new_person=brian),
+                models.Mutation(shift=shift, new_person=None),
+            ]
+
     def test_a_normal_shift_is_covered(self, shift):
         """By default, a shift is covered by defaultPerson"""
         assert shift.is_covered()

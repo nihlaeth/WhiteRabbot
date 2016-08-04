@@ -36,11 +36,11 @@ Then introduce the notion of people, and a shift being covered.
 
 Next, introduce the notion of Mutations.
 
-- [ ]  Who is covering shift X? => default person
-- [ ]  Add a mutation to shift X saying it's empty. Now who is covering it?
-- [ ]  Add a mutation to shift X saying Oskar takes it. Now who is covering it?
-- [ ]  Add a mutation to shift X saying it's empty again. Now who?
-- [ ]  Add a mutation to shift Y saying Wimpje takes it. Now who is covering X? Y?
+- [x]  Who is covering shift X? => default person
+- [x]  Add a mutation to shift X saying it's empty. Now who is covering it?
+- [x]  Add a mutation to shift X saying Oskar takes it. Now who is covering it?
+- [x]  Add a mutation to shift X saying it's empty again. Now who?
+- [x]  Add a mutation to shift Y saying Wimpje takes it. Now who is covering X? Y?
 
 Now, let's introduce recurrence rules.
 
