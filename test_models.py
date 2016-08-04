@@ -12,6 +12,12 @@ def hours(hours: int) -> timedelta:
     return timedelta(hours=hours)
 
 
+@pytest.fixture
+def shift() -> models.Shift:
+    """Return a shift that just started"""
+    return models.Shift(NOW, NOW + hours(1))
+
+
 class TestShift:
 
     def test_init(self):
@@ -35,33 +41,28 @@ class TestShift:
 
     class Test_cover:
 
-        def test_default_cover_is_defaultPerson(self):
+        def test_default_cover_is_defaultPerson(self, shift):
             """A pristine shift is covered by defaultPerson"""
-            shift = models.Shift(NOW, NOW)
             assert shift.cover == models.defaultPerson
 
-        def test_cover_setter_to_None(self):
+        def test_cover_setter_to_None(self, shift):
             """A shift's cover can be set to None"""
-            shift = models.Shift(NOW, NOW)
             shift.cover = None
             assert shift.cover is None
 
-        def test_cover_setter_to_person(self):
+        def test_cover_setter_to_person(self, shift):
             """A shift's cover can be set to a person"""
-            shift = models.Shift(NOW, NOW)
             alice = models.Person('Alice')
             shift.cover = alice
             assert shift.cover == alice
 
-    def test_a_normal_shift_is_covered(self):
+    def test_a_normal_shift_is_covered(self, shift):
         """By default, a shift is covered by defaultPerson"""
-        shift = models.Shift(NOW, NOW)
         assert shift.is_covered()
         assert shift.cover is models.defaultPerson
 
-    def test_a_shift_may_be_uncovered(self):
+    def test_a_shift_may_be_uncovered(self, shift):
         """You can remove a shift's cover, and it will be uncovered"""
-        shift = models.Shift(NOW, NOW)
         shift.remove_cover()
         assert not shift.is_covered()
 
@@ -76,9 +77,8 @@ class TestPerson:
 
 class TestMutation:
 
-    def test_init(self):
+    def test_init(self, shift):
         """I can create a Mutation"""
-        shift = models.Shift(NOW, NOW)
         alice = models.Person(name='Alice van Wonderland')
         mutation = models.Mutation(shift=shift, new_person=alice)
         assert mutation.shift == shift
