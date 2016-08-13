@@ -62,7 +62,7 @@ def list_shifts(session, telegram_group_id) -> Result:
     schedule_result = get_schedule(session, telegram_group_id)
     result = Result()
     if schedule_result.success:
-        result.value = schedule_result.value
+        result.value = schedule_result.value.shifts
     else:
         result.success = False
         result.errors = schedule_result.errors
