@@ -57,11 +57,16 @@ def get_shift_by_id(session, shift_id: int) -> Result:
         result.errors.append("More than 1 shift with id {}".format(shift_id))
     return result
 
-def list_shifts(session, telegram_group_id):
+def list_shifts(session, telegram_group_id) -> Result:
     """List all shifts belonging to the telegram group."""
-    schedule = session.query(Schedule).filter_by(
-        telegram_group_id=telegram_group_id)[0]
-    return schedule.shifts
+    schedule_result = get_schedule(session, telegram_group_id)
+    result = Result()
+    if schedule_result.success:
+        result.value = schedule_result.value
+    else:
+        result.success = False
+        result.errors = schedule_result.errors
+    return result
 
 
 def add_shift(session, telegram_group_id, us_name: str, us_ordering: int) -> Result:
@@ -80,28 +85,38 @@ def add_shift(session, telegram_group_id, us_name: str, us_ordering: int) -> Res
 
     ordering_result = _validate_ordering(us_ordering)
     shift_name_result = _validate_shift_name(us_name)
+    schedule_result = get_schedule(session, telegram_group_id)
     # TODO: check in db that combination (shift_name, group) does not exist yet
     result = Result(message="Shift successfully created")
-    result.success = all([ordering_result.success, shift_name_result.success])
+    result.success = all([
+        ordering_result.success,
+        shift_name_result.success,
+        schedule_result])
     if result.success:
-        schedule = session.query(Schedule).filter_by(
-            telegram_group_id=telegram_group_id)[0]
         shift = Shift(
-            schedule=schedule,
+            schedule=schedule_result.value,
             name=shift_name_result.value,
             ordering=ordering_result.value)
         session.add(shift)
         session.flush()
         result.value = shift
     else:
-        result.errors = ordering_result.errors + shift_name_result.errors
+        result.errors = (
+            ordering_result.errors + shift_name_result.errors + schedule_result)
     return result
 
 
-def delete_shift(session, shift_id):
+def delete_shift(session, shift_id) -> Result:
     """Delete shift."""
-    session.delete(session.query(Shift).filter_by(shift_id=shift_id)[0])
-    session.flush()
+    shift_result = get_shift_by_id(session, shift_id)
+    result = Result(message="Shift deleted")
+    if shift_result.success:
+        session.delete(session.query(Shift).filter_by(shift_id=shift_id)[0])
+        session.flush()
+    else:
+        result.success = False
+        result.errors = shift_result.errors
+    return result
 
 
 def edit_shift(session, shift_id, us_name, us_ordering) -> Result:
@@ -119,15 +134,17 @@ def edit_shift(session, shift_id, us_name, us_ordering) -> Result:
         result.errors = name_result.errors + ordering_result.errors + shift_result.errors
     return result
 
-def schedule_exists(session, telegram_group_id):
-    """Check if a schedule exists for a given telegram group id."""
-    num_schedules = session.query(Schedule).filter_by(
+def get_schedule(session, telegram_group_id) -> Result:
+    """Fetch schedule by telegram group ID."""
+    result = Result()
+    schedules = session.query(Schedule).filter_by(
         telegram_group_id=telegram_group_id)
-    if num_schedules == 0:
-        return False
-    elif num_schedules == 1:
-        return True
+    if len(schedules) == 0:
+        result.success = False
+        result.errors.append("No schedule with this telegram group ID")
+    elif len(schedules) == 1:
+        result.value = schedules[0]
     else:
-        # TODO warn for corrupt data, more than 1 schedule per
-        # telegram group
-        pass
+        result.success = False
+        result.errors.append("More than one schedule with ID {}".format(telegram_group_id))
+    return result
