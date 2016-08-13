@@ -7,39 +7,40 @@ class Result:
     def __init__(self,
                  message: str="",
                  success: bool=True,
-                 value=None
+                 value=None,
+                 errors: list=None
                 ):
         self.success = success
         self.message = message
         self.value = value
-        self.errors = list()
+        if errors is None:
+            self.errors = list()
+        else:
+            self.errors = errors
 
 
 def _validate_ordering(us_ordering) -> Result:
-    """Store ['ordering'] in values if valid, or append error message"""
+    """Return Result with validated ordering, or with errors"""
+    if not isinstance(us_ordering, int):
+        return Result(
+            success=False,
+            errors=['Ordering should be an integer, and not {}'
+                    .format(us_ordering)])
+    else:
+        return Result(value=us_ordering)
+
+
+def _validate_shift_name(us_name: str) -> Result:
+    """Return Result with validated shift name, or with errors"""
     result = Result()
-    try:
-        result.value = int(us_ordering)
-    except ValueError:
+    if not isinstance(us_name, str):
         result.success = False
-        result.errors.append(
-            'Ordering should be an integer, and not {}'.format(us_ordering))
-    return result
-
-
-def _validate_shift_name(us_name) -> Result:
-    """Store ['shift_name'] in values if valid, or append error message"""
-    result = Result()
-    if len(us_name) < 1:
+        result.errors.append('Shift name must be a string')
+    elif len(us_name) < 1:
         result.success = False
         result.errors.append('Shift name may not be empty')
-        return result
-    try:
-        result.value = str(us_name)
-    except ValueError:
-        result.success = False
-        result.errors.append(
-            'Name should be a string, and not a {}'.format(type(us_name)))
+    else:
+        result.value = us_name
     return result
 
 
@@ -61,25 +62,29 @@ def get_shift_by_name(session, telegram_group_id, us_shift_name: str) -> Result:
     """Fetch shift by name."""
     schedule_result = get_schedule(session, telegram_group_id)
     shift_name_result = _validate_shift_name(us_shift_name)
-    result = Result()
-    result.success = all([schedule_result.success, shift_name_result.success])
-    if result.success:
-        query = session.query(Shift).\
-            filter_by(name=shift_name_result.value).\
-            filter_by(schedule_id=schedule_result.value.schedule_id)
-        if len(query) == 0:
-            result.success = False
-            result.errors.append(
-                "No shifts with name {} in this group".format(shift_name_result.value))
-        elif len(query) == 1:
-            result.value = query[0]
-        else:
-            result.success = False
-            result.errors.append(
-                "More than 1 shift with name {} in group".format(shift_name_result.value))
+    if not all((shift_name_result.success, schedule_result.success)):
+        return Result(
+            success=False,
+            errors=shift_name_result.errors + schedule_result.errors)
+    shifts = session.query(Shift).\
+        filter_by(name=shift_name_result.value).\
+        filter_by(schedule_id=schedule_result.value.schedule_id).all()
+    if len(shifts) == 0:
+        return Result(
+            success=False,
+            errors=["No shifts with name {} in this group"
+                    .format(shift_name_result.value)])
+    elif len(shifts) == 1:
+        return Result(
+            success=True,
+            value=shifts[0])
     else:
-        result.errors = schedule_result.errors + shift_name_result.errors
-    return result
+        # More than 1 result
+        return Result(
+            success=False,
+            errors=["More than 1 shift with name {} in group"
+                    .format(shift_name_result.value)])
+
 
 def list_shifts(session, telegram_group_id) -> Result:
     """List all shifts belonging to the telegram group."""
@@ -112,12 +117,12 @@ def add_shift(session, telegram_group_id, us_name: str, us_ordering: int) -> Res
     ordering_result = _validate_ordering(us_ordering)
     shift_name_result = _validate_shift_name(us_name)
     schedule_result = get_schedule(session, telegram_group_id)
-    shift_exists_result = get_shift_by_name(session, telegram_group_id, shift_name_result.value)
+    shift_exists_result = get_shift_by_name(session, telegram_group_id, us_name)
     result = Result(message="Shift successfully created")
     result.success = all([
         ordering_result.success,
         shift_name_result.success,
-        schedule_result,
+        schedule_result.success,
         not shift_exists_result.success])
     if result.success:
         shift = Shift(
@@ -129,7 +134,7 @@ def add_shift(session, telegram_group_id, us_name: str, us_ordering: int) -> Res
         result.value = shift
     else:
         result.errors = (
-            ordering_result.errors + shift_name_result.errors + schedule_result)
+            ordering_result.errors + shift_name_result.errors + schedule_result.errors)
         if shift_exists_result.success:
             result.errors.append(
                 "There is already a shift with the name {} in this group".format(
@@ -169,7 +174,7 @@ def get_schedule(session, telegram_group_id) -> Result:
     """Fetch schedule by telegram group ID."""
     result = Result()
     schedules = session.query(Schedule).filter_by(
-        telegram_group_id=telegram_group_id)
+        telegram_group_id=telegram_group_id).all()
     if len(schedules) == 0:
         result.success = False
         result.errors.append("No schedule with this telegram group ID")
