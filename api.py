@@ -46,7 +46,7 @@ def _validate_shift_name(us_name) -> Result:
 def get_shift_by_id(session, shift_id: int) -> Result:
     """Fetch shift by id."""
     result = Result()
-    query = session.query(Shift).filter_by(shift_id=shift_id)[0]
+    query = session.query(Shift).filter_by(shift_id=shift_id)
     if len(query) == 0:
         result.success = False
         result.errors.append("No shifts with id {}".format(shift_id))
@@ -57,11 +57,37 @@ def get_shift_by_id(session, shift_id: int) -> Result:
         result.errors.append("More than 1 shift with id {}".format(shift_id))
     return result
 
+def get_shift_by_name(session, telegram_group_id, us_shift_name: str) -> Result:
+    """Fetch shift by name."""
+    schedule_result = get_schedule(session, telegram_group_id)
+    shift_name_result = _validate_shift_name(us_shift_name)
+    result = Result()
+    result.success = all([schedule_result.success, shift_name_result.success])
+    if result.success:
+        query = session.query(Shift).\
+            filter_by(name=shift_name_result.value).\
+            filter_by(schedule_id=schedule_result.value.schedule_id)
+        if len(query) == 0:
+            result.success = False
+            result.errors.append(
+                "No shifts with name {} in this group".format(shift_name_result.value))
+        elif len(query) == 1:
+            result.value = query[0]
+        else:
+            result.success = False
+            result.errors.append(
+                "More than 1 shift with name {} in group".format(shift_name_result.value))
+    else:
+        result.errors = schedule_result.errors + shift_name_result.errors
+    return result
+
 def list_shifts(session, telegram_group_id) -> Result:
     """List all shifts belonging to the telegram group."""
     schedule_result = get_schedule(session, telegram_group_id)
     result = Result()
     if schedule_result.success:
+        # pylint: disable=no-member
+        # Result.value can have dynamic members
         result.value = schedule_result.value.shifts
     else:
         result.success = False
@@ -86,12 +112,13 @@ def add_shift(session, telegram_group_id, us_name: str, us_ordering: int) -> Res
     ordering_result = _validate_ordering(us_ordering)
     shift_name_result = _validate_shift_name(us_name)
     schedule_result = get_schedule(session, telegram_group_id)
-    # TODO: check in db that combination (shift_name, group) does not exist yet
+    shift_exists_result = get_shift_by_name(session, telegram_group_id, shift_name_result.value)
     result = Result(message="Shift successfully created")
     result.success = all([
         ordering_result.success,
         shift_name_result.success,
-        schedule_result])
+        schedule_result,
+        not shift_exists_result.success])
     if result.success:
         shift = Shift(
             schedule=schedule_result.value,
@@ -103,6 +130,10 @@ def add_shift(session, telegram_group_id, us_name: str, us_ordering: int) -> Res
     else:
         result.errors = (
             ordering_result.errors + shift_name_result.errors + schedule_result)
+        if shift_exists_result.success:
+            result.errors.append(
+                "There is already a shift with the name {} in this group".format(
+                    shift_name_result.value))
     return result
 
 
