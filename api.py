@@ -47,7 +47,7 @@ def _validate_shift_name(us_name: str) -> Result:
 def get_shift_by_id(session, shift_id: int) -> Result:
     """Fetch shift by id."""
     result = Result()
-    query = session.query(Shift).filter_by(shift_id=shift_id)
+    query = session.query(Shift).filter_by(shift_id=shift_id).all()
     if len(query) == 0:
         result.success = False
         result.errors.append("No shifts with id {}".format(shift_id))
