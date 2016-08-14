@@ -85,3 +85,36 @@ class Test_delete_shift():
         with DummyDB() as session:
             result = api.delete_shift(session, 1)
             assert_equals(result.success, False)
+
+class Test_edit_shift():
+
+    def test_valid_data(self):
+        with DummyDB() as session:
+            shift = Shift(name="test", ordering=0)
+            session.add(shift)
+            session.flush()
+            result = api.edit_shift(session, 1, "new test", 1)
+            assert_equals(result.success, True)
+            assert_equals(shift.name, "new test")
+            assert_equals(shift.ordering, 1)
+
+    def test_non_existing_id(self):
+        with DummyDB() as session:
+            result = api.edit_shift(session, 1, "new test", 1)
+            assert_equals(result.success, False)
+
+    def test_invalid_name(self):
+        with DummyDB() as session:
+            shift = Shift(name="test", ordering=0)
+            session.add(shift)
+            session.flush()
+            result = api.edit_shift(session, 1, None, 1)
+            assert_equals(result.success, False)
+
+    def test_invalid_ordering(self):
+        with DummyDB() as session:
+            shift = Shift(name="test", ordering=0)
+            session.add(shift)
+            session.flush()
+            result = api.edit_shift(session, 1, "test2", None)
+            assert_equals(result.success, False)
