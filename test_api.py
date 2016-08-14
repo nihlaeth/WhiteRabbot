@@ -69,3 +69,19 @@ class Test_add_shift():
             result = api.add_shift(session, 1, 'Evening', '2')
 
             assert_equals(result.success, False)
+
+
+class Test_delete_shift():
+
+    def test_valid_data(self):
+        with DummyDB() as session:
+            shift = Shift(name="test")
+            session.add(shift)
+            session.flush()
+            result = api.delete_shift(session, 1)
+            assert_equals(result.success, True)
+
+    def test_non_existing_id(self):
+        with DummyDB() as session:
+            result = api.delete_shift(session, 1)
+            assert_equals(result.success, False)
