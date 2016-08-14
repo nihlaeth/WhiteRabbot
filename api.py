@@ -161,7 +161,7 @@ def edit_shift(session, shift_id, us_name, us_ordering) -> Result:
     ordering_result = _validate_ordering(us_ordering)
     shift_result = get_shift_by_id(session, shift_id)
     result = Result(message="Shift successfully edited")
-    result.success = all([name_result.success, ordering_result.success, shift_result])
+    result.success = all([name_result.success, ordering_result.success, shift_result.success])
     if result.success:
         shift_result.value.name = us_name
         shift_result.value.ordering = us_ordering
