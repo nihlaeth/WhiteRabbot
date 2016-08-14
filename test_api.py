@@ -118,3 +118,18 @@ class Test_edit_shift():
             session.flush()
             result = api.edit_shift(session, 1, "test2", None)
             assert_equals(result.success, False)
+
+class Test_get_schedule():
+
+    def test_valid_data(self):
+        with DummyDB() as session:
+            schedule = Schedule(telegram_group_id=1)
+            session.add(schedule)
+            session.flush()
+            result = api.get_schedule(session, 1)
+            assert_equals(result.success, True)
+
+    def test_non_existing_id(self):
+        with DummyDB() as session:
+            result = api.get_schedule(session, 1)
+            assert_equals(result.success, False)
