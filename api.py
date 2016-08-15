@@ -1,5 +1,5 @@
 """API for interacting with database."""
-from models import Schedule, Shift
+from models import Schedule, Shift, User
 
 
 class Result:
@@ -170,6 +170,19 @@ def edit_shift(session, shift_id, us_name, us_ordering) -> Result:
         result.errors = name_result.errors + ordering_result.errors + shift_result.errors
     return result
 
+def get_user(session, telegram_user_id) -> Result:
+    """Fetch user by telegram user id."""
+    users = session.query(User).filter_by(
+        telegram_user_id=telegram_user_id).all()
+    if len(users) == 0:
+        return Result(success=False, errors=[
+            "No users with telegram user id {}".format(telegram_user_id)])
+    elif len(users) == 1:
+        return Result(value=users[0])
+    else:
+        return Result(success=False, errors=[
+            "More than 1 user with telegram user id {}".format(telegram_user_id)])
+
 def get_schedule_by_id(session, schedule_id) -> Result:
     """Fetch schedule by id."""
     result = Result()
@@ -199,3 +212,15 @@ def get_schedule(session, telegram_group_id) -> Result:
         result.success = False
         result.errors.append("More than one schedule with ID {}".format(telegram_group_id))
     return result
+
+def add_schedule(session, telegram_group_id, telegram_admin_id) -> Result:
+    """Create schedule."""
+    admin_result = get_user(session, telegram_admin_id)
+    if admin_result.success:
+        schedule = Schedule(
+            telegram_group_id=telegram_group_id,
+            admin_id=admin_result.value.user_id)
+        session.add(schedule)
+        session.flush()
+        return Result(value=schedule)
+    return Result(success=False, errors=admin_result.errors)

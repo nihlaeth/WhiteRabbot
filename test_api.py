@@ -4,7 +4,7 @@ from nose.tools import assert_equals
 
 from dummydb import DummyDB
 import api
-from models import Schedule, Shift
+from models import Schedule, Shift, User
 
 def test_list_shifts():
     with DummyDB() as session:
@@ -241,4 +241,36 @@ class Test_get_schedule_by_id():
     def test_non_existing_id(self):
         with DummyDB() as session:
             result = api.get_schedule_by_id(session, 1)
+            assert_equals(result.success, False)
+
+class Test_get_user():
+
+    def test_valid_data(self):
+        with DummyDB() as session:
+            user = User(telegram_user_id=1)
+            session.add(user)
+            session.flush()
+            result = api.get_user(session, 1)
+            assert_equals(result.success, True)
+
+    def test_non_existing_id(self):
+        with DummyDB() as session:
+            result = api.get_user(session, 1)
+            assert_equals(result.success, False)
+
+
+class Test_add_schedule():
+
+    def test_valid_data(self):
+        with DummyDB() as session:
+            user = User(telegram_user_id=1)
+            session.add(user)
+            session.flush()
+            result = api.add_schedule(session, 1, 1)
+            assert_equals(result.success, True)
+            assert_equals(result.value.schedule_id, 1)
+
+    def test_non_existent_admin(self):
+        with DummyDB() as session:
+            result = api.add_schedule(session, 1, 1)
             assert_equals(result.success, False)
