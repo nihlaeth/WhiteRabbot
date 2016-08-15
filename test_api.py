@@ -179,3 +179,50 @@ class Test_get_shift_by_id():
         with DummyDB() as session:
             result = api.get_shift_by_id(session, 1)
             assert_equals(result.success, False)
+
+
+class Test_get_shift_by_name():
+
+    def test_valid_data(self):
+        with DummyDB() as session:
+            schedule = Schedule(telegram_group_id=1)
+            shift = Shift(schedule=schedule, name="test")
+            session.add_all([schedule, shift])
+            session.flush()
+            result = api.get_shift_by_name(session, 1, "test")
+            assert_equals(result.success, True)
+
+    def test_non_existent_schedule(self):
+        with DummyDB() as session:
+            shift = Shift(name="test")
+            session.add_all([shift])
+            session.flush()
+            result = api.get_shift_by_name(session, 1, "test")
+            assert_equals(result.success, False)
+
+    def test_non_related_schedule(self):
+        with DummyDB() as session:
+            schedule = Schedule(telegram_group_id=1)
+            shift = Shift(name="test")
+            session.add_all([schedule, shift])
+            session.flush()
+            result = api.get_shift_by_name(session, 1, "test")
+            assert_equals(result.success, False)
+
+    def test_invalid_name(self):
+        with DummyDB() as session:
+            schedule = Schedule(telegram_group_id=1)
+            shift = Shift(schedule=schedule, name="test")
+            session.add_all([schedule, shift])
+            session.flush()
+            result = api.get_shift_by_name(session, 1, 0)
+            assert_equals(result.success, False)
+
+    def test_no_matching_shift(self):
+        with DummyDB() as session:
+            schedule = Schedule(telegram_group_id=1)
+            shift = Shift(schedule=schedule, name="Some shift")
+            session.add_all([schedule, shift])
+            session.flush()
+            result = api.get_shift_by_name(session, 1, "test")
+            assert_equals(result.success, False)
