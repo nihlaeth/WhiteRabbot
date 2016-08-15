@@ -162,3 +162,20 @@ class Test_validate_shift_name():
     def test_empty_str(self):
         result = api._validate_shift_name("")
         assert_equals(result.success, False)
+
+
+class Test_get_shift_by_id():
+
+    def test_valid_data(self):
+        with DummyDB() as session:
+            shift = Shift()
+            session.add(shift)
+            session.flush()
+            result = api.get_shift_by_id(session, 1)
+            assert_equals(result.success, True)
+            assert_equals(result.value.shift_id, 1)
+
+    def test_non_valid_id(self):
+        with DummyDB() as session:
+            result = api.get_shift_by_id(session, 1)
+            assert_equals(result.success, False)
