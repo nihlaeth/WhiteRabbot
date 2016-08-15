@@ -170,6 +170,21 @@ def edit_shift(session, shift_id, us_name, us_ordering) -> Result:
         result.errors = name_result.errors + ordering_result.errors + shift_result.errors
     return result
 
+def get_schedule_by_id(session, schedule_id) -> Result:
+    """Fetch schedule by id."""
+    result = Result()
+    schedules = session.query(Schedule).filter_by(
+        schedule_id=schedule_id).all()
+    if len(schedules) == 0:
+        result.success = False
+        result.errors.append("No schedule with this group ID")
+    elif len(schedules) == 1:
+        result.value = schedules[0]
+    else:
+        result.success = False
+        result.errors.append("More than one schedule with ID {}".format(schedule_id))
+    return result
+
 def get_schedule(session, telegram_group_id) -> Result:
     """Fetch schedule by telegram group ID."""
     result = Result()

@@ -226,3 +226,19 @@ class Test_get_shift_by_name():
             session.flush()
             result = api.get_shift_by_name(session, 1, "test")
             assert_equals(result.success, False)
+
+
+class Test_get_schedule_by_id():
+
+    def test_valid_data(self):
+        with DummyDB() as session:
+            schedule = Schedule()
+            session.add(schedule)
+            session.flush()
+            result = api.get_schedule_by_id(session, 1)
+            assert_equals(result.success, True)
+
+    def test_non_existing_id(self):
+        with DummyDB() as session:
+            result = api.get_schedule_by_id(session, 1)
+            assert_equals(result.success, False)
