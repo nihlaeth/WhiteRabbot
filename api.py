@@ -147,7 +147,7 @@ def delete_shift(session, shift_id) -> Result:
     shift_result = get_shift_by_id(session, shift_id)
     result = Result(message="Shift deleted")
     if shift_result.success:
-        session.delete(session.query(Shift).filter_by(shift_id=shift_id)[0])
+        session.delete(shift_result.value)
         session.flush()
     else:
         result.success = False
@@ -224,3 +224,16 @@ def add_schedule(session, telegram_group_id, telegram_admin_id) -> Result:
         session.flush()
         return Result(value=schedule)
     return Result(success=False, errors=admin_result.errors)
+
+
+def delete_schedule(session, schedule_id) -> Result:
+    """Delete schedule."""
+    schedule_result = get_schedule_by_id(session, schedule_id)
+    result = Result(message="Schedule deleted")
+    if schedule_result.success:
+        session.delete(schedule_result.value)
+        session.flush()
+    else:
+        result.success = False
+        result.errors = schedule_result.errors
+    return result

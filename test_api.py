@@ -274,3 +274,19 @@ class Test_add_schedule():
         with DummyDB() as session:
             result = api.add_schedule(session, 1, 1)
             assert_equals(result.success, False)
+
+
+class Test_delete_schedule():
+
+    def test_valid_data(self):
+        with DummyDB() as session:
+            schedule = Schedule()
+            session.add(schedule)
+            session.flush()
+            result = api.delete_schedule(session, 1)
+            assert_equals(result.success, True)
+
+    def test_non_existent_id(self):
+        with DummyDB() as session:
+            result = api.delete_schedule(session, 1)
+            assert_equals(result.success, False)
