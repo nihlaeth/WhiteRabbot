@@ -232,6 +232,7 @@ def delete_schedule(session, schedule_id) -> Result:
     result = Result(message="Schedule deleted")
     if schedule_result.success:
         session.delete(schedule_result.value)
+        # TODO: delete shifts and mutations belonging to schedule
         session.flush()
     else:
         result.success = False
