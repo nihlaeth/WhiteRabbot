@@ -1,32 +1,34 @@
 from datetime import datetime
 from typing import Optional
 
+from sqlalchemy import Column, DateTime, Integer, ForeignKey, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
 
-class Person:
+from db import SessionScope, get_or_create, engine
+
+BASE = declarative_base()
+
+
+class Person(BASE):
     """Somebody who works, and may cover a shift."""
 
-    def __init__(self, name: str) -> None:
-        self.name = name
+    __tablename__ = 'people'
+    id = Column(name='person_id', type_=Integer, primary_key=True)
+    name = Column(String)
 
 
-defaultPerson = Person('DEFAULT')
-
-
-class Shift:
+class Shift(BASE):
     """One specific shift where one Person should be working.
 
     If there is an evening shift from 17:00 to 19:00 every day, this might be
     the evening shift of 2016-12-31.
     """
 
-    def __init__(
-            self,
-            start: datetime,
-            stop: datetime,
-            ) -> None:
-        self.start = start
-        self.stop = stop
-        self.mutations = []  # type: List[Mutation]
+    __tablename__ = 'shifts'
+    id = Column(name='shift_id', type_=Integer, primary_key=True)
+    start = Column(DateTime)
+    stop = Column(DateTime)
 
     @property
     def cover(self) -> Optional[Person]:
@@ -51,13 +53,19 @@ class Shift:
         """Is there somebody covering this shift?"""
         return self.cover is not None
 
+    mutations = relationship("Mutation", back_populates="shift")
 
-class Mutation:
+
+class Mutation(BASE):
     """A change in the Person who covers a Shift"""
 
-    def __init__(self, shift: Shift, new_person: Optional[Person]) -> None:
-        self.shift = shift
-        self.new_person = new_person
+    __tablename__ = 'mutations'
+    id = Column(name='mutation_id', type_=Integer, primary_key=True)
+    shift_id = Column('shift_id', Integer, ForeignKey('shifts.shift_id'))
+    new_person = Column('new_person', Integer,
+                        ForeignKey('people.person_id'))
+
+    shift = relationship("Shift")
 
     def __eq__(self, other):
         return (
@@ -66,3 +74,21 @@ class Mutation:
             and self.shift == other.shift
             and self.new_person == other.new_person
         )
+
+    def __str__(self):
+        return '<Mutation {id}: {person} on shift {shift}>'.format(
+            id=self.id,
+            person=self.new_person.name if self.new_person is not None else 'None',
+            shift=self.shift_id
+        )
+
+    def __repr__(self):
+        return str(self)
+
+
+BASE.metadata.create_all(engine)
+
+
+# Ensure defaultPerson exists
+with SessionScope() as session:
+    defaultPerson = get_or_create(session, Person, name='DEFAULT')

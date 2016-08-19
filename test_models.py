@@ -15,14 +15,14 @@ def hours(hours: int) -> timedelta:
 @pytest.fixture
 def shift() -> models.Shift:
     """Return a shift that just started"""
-    return models.Shift(NOW, NOW + hours(1))
+    return models.Shift(start=NOW, stop=NOW + hours(1))
 
 
 class TestShift:
 
     def test_init(self):
         """I can create a shift using two datetimes."""
-        shift = models.Shift(NOW, NOW + hours(1))
+        shift = models.Shift(start=NOW, stop=NOW + hours(1))
         assert shift.start == NOW
         assert shift.stop == NOW + hours(1)
 
@@ -36,7 +36,7 @@ class TestShift:
     )
     def test_is_active(self, start, stop, at, expected):
         """Shift.is_active handles shifts before, after, and containing `at`"""
-        shift = models.Shift(start, stop)
+        shift = models.Shift(start=start, stop=stop)
         assert shift.is_active(at) == expected
 
     class Test_cover:
@@ -52,23 +52,26 @@ class TestShift:
 
         def test_cover_setter_to_person(self, shift):
             """A shift's cover can be set to a person"""
-            alice = models.Person('Alice')
+            alice = models.Person(name='Alice')
             shift.cover = alice
             assert shift.cover == alice
 
         def test_setting_cover_creates_mutations(self, shift):
-            alice = models.Person('Alice')
-            brian = models.Person('Brian')
+            from pprint import pprint as pp
+            pp(shift.mutations)
+            alice = models.Person(name='Alice')
+            brian = models.Person(name='Brian')
             shift.remove_cover()
             shift.cover = alice
             shift.cover = brian
             shift.remove_cover()
-            assert shift.mutations == [
+            expected_mutations = [
                 models.Mutation(shift=shift, new_person=None),
                 models.Mutation(shift=shift, new_person=alice),
                 models.Mutation(shift=shift, new_person=brian),
                 models.Mutation(shift=shift, new_person=None),
             ]
+            assert shift.mutations == expected_mutations
 
     def test_a_normal_shift_is_covered(self, shift):
         """By default, a shift is covered by defaultPerson"""
