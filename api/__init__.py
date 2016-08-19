@@ -1,6 +1,7 @@
 """API for interacting with database."""
 from ..models import Schedule, Shift, User
 
+from .errors import ApiError
 
 class Result:
     """Represent a result that can be either a value or an error"""
@@ -24,8 +25,8 @@ def _validate_ordering(us_ordering) -> Result:
     if not isinstance(us_ordering, int):
         return Result(
             success=False,
-            errors=['Ordering should be an integer, and not {}'
-                    .format(us_ordering)])
+            errors=[ApiError.shift_ordering_is_not_an_int
+                    .value.format(us_ordering)])
     else:
         return Result(value=us_ordering)
 
