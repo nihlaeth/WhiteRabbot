@@ -2,9 +2,9 @@
 # pylint: disable=missing-docstring, invalid-name
 from nose.tools import assert_equals
 
-from dummydb import DummyDB
-import api
-from models import Schedule, Shift, User
+from .. import api
+from ..dummydb import DummyDB
+from ..models import Schedule, Shift, User
 
 def test_list_shifts():
     with DummyDB() as session:

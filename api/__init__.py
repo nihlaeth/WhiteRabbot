@@ -1,5 +1,5 @@
 """API for interacting with database."""
-from models import Schedule, Shift, User
+from ..models import Schedule, Shift, User
 
 
 class Result:
