@@ -290,3 +290,32 @@ class Test_delete_schedule():
         with DummyDB() as session:
             result = api.delete_schedule(session, 1)
             assert_equals(result.success, False)
+
+class Test_add_user_to_schedule():
+
+    def test_valid_data(self):
+        with DummyDB() as session:
+            schedule = Schedule(telegram_group_id=1)
+            user = User(telegram_user_id=1)
+            session.add_all([schedule, user])
+            session.flush()
+            result = api.add_user_to_schedule(session, 1, 1)
+            assert_equals(result.success, True)
+            assert_equals(len(user.schedules), 1)
+            assert_equals(len(schedule.users), 1)
+
+    def test_non_existent_user(self):
+        with DummyDB() as session:
+            schedule = Schedule(telegram_group_id=1)
+            session.add_all([schedule])
+            session.flush()
+            result = api.add_user_to_schedule(session, 1, 1)
+            assert_equals(result.success, False)
+
+    def test_non_existent_schedule(self):
+        with DummyDB() as session:
+            user = User(telegram_user_id=1)
+            session.add_all([user])
+            session.flush()
+            result = api.add_user_to_schedule(session, 1, 1)
+            assert_equals(result.success, False)

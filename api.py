@@ -238,3 +238,15 @@ def delete_schedule(session, schedule_id) -> Result:
         result.success = False
         result.errors = schedule_result.errors
     return result
+
+def add_user_to_schedule(session, telegram_user_id, telegram_group_id) -> Result:
+    """Add user to schedule."""
+    user_result = get_user(session, telegram_user_id)
+    schedule_result = get_schedule(session, telegram_group_id)
+    if user_result.success and schedule_result.success:
+        schedule_result.value.users.append(user_result.value)
+        return Result(message="User added to schedule.")
+    else:
+        return Result(
+            success=False,
+            errors=user_result.errors + schedule_result.errors)
