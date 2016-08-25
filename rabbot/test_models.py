@@ -1,8 +1,8 @@
 """Empty database context manager to simplify testing."""
 from nose.tools import assert_equals
 
-from models import User, Schedule, Shift, Mutation
-from dummydb import DummyDB
+from rabbot.models import User, Schedule, Shift, Mutation
+from rabbot.dummydb import DummyDB
 
 # pylint: disable=missing-docstring
 

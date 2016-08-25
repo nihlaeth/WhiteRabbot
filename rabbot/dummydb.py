@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # pylint: disable=wildcard-import,unused-wildcard-import
-from models import *
+from rabbot.models import *
 
 # pylint: disable=too-few-public-methods,missing-docstring
 class DummyDB(object):
