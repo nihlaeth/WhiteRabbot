@@ -1,7 +1,10 @@
-"""Tests for API."""
+"""Tests for the API's public functions."""
 # pylint: disable=missing-docstring, invalid-name
 from nose.tools import assert_equals
 
+# Instead of `from rabbot import api`, we could also do `from . import core`.
+# We don't: this test suite is aimed at the API module's public API, regardless
+# of how it is implemented.
 from rabbot import api
 from rabbot.dummydb import DummyDB
 from rabbot.models import Schedule, Shift, User
