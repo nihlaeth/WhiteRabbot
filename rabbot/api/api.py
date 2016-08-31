@@ -1,47 +1,6 @@
 """API for interacting with database."""
 from rabbot.models import Schedule, Shift, User
-
-
-class Result:
-    """Represent a result that can be either a value or an error"""
-    def __init__(self,
-                 message: str="",
-                 success: bool=True,
-                 value=None,
-                 errors: list=None
-                ):
-        self.success = success
-        self.message = message
-        self.value = value
-        if errors is None:
-            self.errors = list()
-        else:
-            self.errors = errors
-
-
-def _validate_ordering(us_ordering) -> Result:
-    """Return Result with validated ordering, or with errors"""
-    if not isinstance(us_ordering, int):
-        return Result(
-            success=False,
-            errors=['Ordering should be an integer, and not {}'
-                    .format(us_ordering)])
-    else:
-        return Result(value=us_ordering)
-
-
-def _validate_shift_name(us_name: str) -> Result:
-    """Return Result with validated shift name, or with errors"""
-    result = Result()
-    if not isinstance(us_name, str):
-        result.success = False
-        result.errors.append('Shift name must be a string')
-    elif len(us_name) < 1:
-        result.success = False
-        result.errors.append('Shift name may not be empty')
-    else:
-        result.value = us_name
-    return result
+from .helpers import Result, validate_ordering, validate_shift_name
 
 
 def get_shift_by_id(session, shift_id: int) -> Result:
@@ -58,10 +17,11 @@ def get_shift_by_id(session, shift_id: int) -> Result:
         result.errors.append("More than 1 shift with id {}".format(shift_id))
     return result
 
+
 def get_shift_by_name(session, telegram_group_id, us_shift_name: str) -> Result:
     """Fetch shift by name."""
     schedule_result = get_schedule(session, telegram_group_id)
-    shift_name_result = _validate_shift_name(us_shift_name)
+    shift_name_result = validate_shift_name(us_shift_name)
     if not all((shift_name_result.success, schedule_result.success)):
         return Result(
             success=False,
@@ -114,8 +74,8 @@ def add_shift(session, telegram_group_id, us_name: str, us_ordering: int) -> Res
     # - everything is fine and dandy
     #   -> return added shift
 
-    ordering_result = _validate_ordering(us_ordering)
-    shift_name_result = _validate_shift_name(us_name)
+    ordering_result = validate_ordering(us_ordering)
+    shift_name_result = validate_shift_name(us_name)
     schedule_result = get_schedule(session, telegram_group_id)
     shift_exists_result = get_shift_by_name(session, telegram_group_id, us_name)
     result = Result(message="Shift successfully created")
@@ -157,8 +117,8 @@ def delete_shift(session, shift_id) -> Result:
 
 def edit_shift(session, shift_id, us_name, us_ordering) -> Result:
     """Edit existing shift."""
-    name_result = _validate_shift_name(us_name)
-    ordering_result = _validate_ordering(us_ordering)
+    name_result = validate_shift_name(us_name)
+    ordering_result = validate_ordering(us_ordering)
     shift_result = get_shift_by_id(session, shift_id)
     result = Result(message="Shift successfully edited")
     result.success = all([name_result.success, ordering_result.success, shift_result.success])
@@ -169,6 +129,7 @@ def edit_shift(session, shift_id, us_name, us_ordering) -> Result:
     else:
         result.errors = name_result.errors + ordering_result.errors + shift_result.errors
     return result
+
 
 def get_user(session, telegram_user_id) -> Result:
     """Fetch user by telegram user id."""
@@ -182,6 +143,7 @@ def get_user(session, telegram_user_id) -> Result:
     else:
         return Result(success=False, errors=[
             "More than 1 user with telegram user id {}".format(telegram_user_id)])
+
 
 def get_schedule_by_id(session, schedule_id) -> Result:
     """Fetch schedule by id."""
@@ -198,6 +160,7 @@ def get_schedule_by_id(session, schedule_id) -> Result:
         result.errors.append("More than one schedule with ID {}".format(schedule_id))
     return result
 
+
 def get_schedule(session, telegram_group_id) -> Result:
     """Fetch schedule by telegram group ID."""
     result = Result()
@@ -212,6 +175,7 @@ def get_schedule(session, telegram_group_id) -> Result:
         result.success = False
         result.errors.append("More than one schedule with ID {}".format(telegram_group_id))
     return result
+
 
 def add_schedule(session, telegram_group_id, telegram_admin_id) -> Result:
     """Create schedule."""
@@ -238,6 +202,7 @@ def delete_schedule(session, schedule_id) -> Result:
         result.success = False
         result.errors = schedule_result.errors
     return result
+
 
 def add_user_to_schedule(session, telegram_user_id, telegram_group_id) -> Result:
     """Add user to schedule."""
