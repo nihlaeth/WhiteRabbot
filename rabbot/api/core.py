@@ -1,6 +1,7 @@
 """API for interacting with database."""
 from rabbot.models import Schedule, Shift, User
 from .helpers import Result, validate_ordering, validate_shift_name
+from .errors import *
 
 
 def get_shift_by_id(session, shift_id: int) -> Result:
@@ -9,12 +10,12 @@ def get_shift_by_id(session, shift_id: int) -> Result:
     query = session.query(Shift).filter_by(shift_id=shift_id).all()
     if len(query) == 0:
         result.success = False
-        result.errors.append("No shifts with id {}".format(shift_id))
+        result.errors.append(NoShiftWithIdError(shift_id))
     elif len(query) == 1:
         result.value = query[0]
     else:
         result.success = False
-        result.errors.append("More than 1 shift with id {}".format(shift_id))
+        result.errors.append(MoreThan1ShiftWithIdError(shift_id))
     return result
 
 
@@ -32,8 +33,7 @@ def get_shift_by_name(session, telegram_group_id, us_shift_name: str) -> Result:
     if len(shifts) == 0:
         return Result(
             success=False,
-            errors=["No shifts with name {} in this group"
-                    .format(shift_name_result.value)])
+            errors=[NoShiftWithNameError(shift_name_result.value)])
     elif len(shifts) == 1:
         return Result(
             success=True,
@@ -42,8 +42,7 @@ def get_shift_by_name(session, telegram_group_id, us_shift_name: str) -> Result:
         # More than 1 result
         return Result(
             success=False,
-            errors=["More than 1 shift with name {} in group"
-                    .format(shift_name_result.value)])
+            errors=[MoreThan1ShiftWithNameError(shift_name_result.value)])
 
 
 def list_shifts(session, telegram_group_id) -> Result:
@@ -137,12 +136,12 @@ def get_user(session, telegram_user_id) -> Result:
         telegram_user_id=telegram_user_id).all()
     if len(users) == 0:
         return Result(success=False, errors=[
-            "No users with telegram user id {}".format(telegram_user_id)])
+            NoUserWithTelegramUserIdError(telegram_user_id)])
     elif len(users) == 1:
         return Result(value=users[0])
     else:
         return Result(success=False, errors=[
-            "More than 1 user with telegram user id {}".format(telegram_user_id)])
+            MoreThan1UserWithTelegramUserIdError(telegram_user_id)])
 
 
 def get_schedule_by_id(session, schedule_id) -> Result:
@@ -152,12 +151,12 @@ def get_schedule_by_id(session, schedule_id) -> Result:
         schedule_id=schedule_id).all()
     if len(schedules) == 0:
         result.success = False
-        result.errors.append("No schedule with this group ID")
+        result.errors.append(NoScheduleWithIdError(schedule_id))
     elif len(schedules) == 1:
         result.value = schedules[0]
     else:
         result.success = False
-        result.errors.append("More than one schedule with ID {}".format(schedule_id))
+        result.errors.append(MoreThan1ScheduleWithIdError(schedule_id))
     return result
 
 
@@ -168,12 +167,13 @@ def get_schedule(session, telegram_group_id) -> Result:
         telegram_group_id=telegram_group_id).all()
     if len(schedules) == 0:
         result.success = False
-        result.errors.append("No schedule with this telegram group ID")
+        result.errors.append(NoScheduleWithTelegramGroupIdError(telegram_group_id))
     elif len(schedules) == 1:
         result.value = schedules[0]
     else:
         result.success = False
-        result.errors.append("More than one schedule with ID {}".format(telegram_group_id))
+        result.errors.append(
+            MoreThan1ScheduleWithTelegramGroupIdError(telegram_group_id))
     return result
 
 
