@@ -14,6 +14,9 @@ class APIError():
         raise NotImplementedError
 
     def __str__(self):
+        return self.message
+
+    def __repr__(self):
         return self.code
 
 
