@@ -1,22 +1,13 @@
 """API for interacting with database."""
-from rabbot.models import Schedule, Shift, User
+import pymongo
+from bson.objectid import ObjectId
+from typing import Iterable, Dict
 from .helpers import Result, validate_ordering, validate_shift_name
 from .errors import *
 
 
-def get_shift_by_id(session, shift_id: int) -> Result:
-    """Fetch shift by id."""
-    result = Result()
-    query = session.query(Shift).filter_by(shift_id=shift_id).all()
-    if len(query) == 0:
-        result.success = False
-        result.errors.append(NoShiftWithIdError(shift_id))
-    elif len(query) == 1:
-        result.value = query[0]
-    else:
-        result.success = False
-        result.errors.append(MoreThan1ShiftWithIdError(shift_id))
-    return result
+client = pymongo.MongoClient()
+db = client.white_rabbot
 
 
 def get_shift_by_name(session, telegram_group_id, us_shift_name: str) -> Result:
@@ -45,18 +36,13 @@ def get_shift_by_name(session, telegram_group_id, us_shift_name: str) -> Result:
             errors=[MoreThan1ShiftWithNameError(shift_name_result.value)])
 
 
-def list_shifts(session, telegram_group_id) -> Result:
+def list_shifts(telegram_group_id: int) -> Iterable[Dict]:
     """List all shifts belonging to the telegram group."""
-    schedule_result = get_schedule(session, telegram_group_id)
-    result = Result()
-    if schedule_result.success:
-        # pylint: disable=no-member
-        # Result.value can have dynamic members
-        result.value = schedule_result.value.shifts
-    else:
-        result.success = False
-        result.errors = schedule_result.errors
-    return result
+    yield from db.records.fetch({
+        'telegram_group_id': telegram_group_id,
+        'type': 'shift'
+        }):
+        yield record
 
 
 def add_shift(session, telegram_group_id, us_name: str, us_ordering: int) -> Result:
