@@ -1,7 +1,7 @@
 """API for interacting with database."""
 import pymongo
 from bson.objectid import ObjectId
-from typing import Iterable, Dict
+from typing import Option, Iterable, Dict
 from .helpers import Result, validate_ordering, validate_shift_name
 from .errors import *
 
@@ -10,39 +10,22 @@ client = pymongo.MongoClient()
 db = client.white_rabbot
 
 
-def get_shift_by_name(session, telegram_group_id, us_shift_name: str) -> Result:
+def get_shift_by_name(session, telegram_group_id, us_shift_name: str) -> Option[Dict]:
     """Fetch shift by name."""
-    schedule_result = get_schedule(session, telegram_group_id)
     shift_name_result = validate_shift_name(us_shift_name)
-    if not all((shift_name_result.success, schedule_result.success)):
-        return Result(
-            success=False,
-            errors=shift_name_result.errors + schedule_result.errors)
-    shifts = session.query(Shift).\
-        filter_by(name=shift_name_result.value).\
-        filter_by(schedule_id=schedule_result.value.schedule_id).all()
-    if len(shifts) == 0:
-        return Result(
-            success=False,
-            errors=[NoShiftWithNameError(shift_name_result.value)])
-    elif len(shifts) == 1:
-        return Result(
-            success=True,
-            value=shifts[0])
-    else:
-        # More than 1 result
-        return Result(
-            success=False,
-            errors=[MoreThan1ShiftWithNameError(shift_name_result.value)])
+    if not shift_name_result.success:
+        return None
+    return db.records.fetch_one({
+        'telegram_group_id': telegram_group_id,
+        'name': shift_name_result.value,
+        'type': 'shift'})
 
 
 def list_shifts(telegram_group_id: int) -> Iterable[Dict]:
     """List all shifts belonging to the telegram group."""
     yield from db.records.fetch({
         'telegram_group_id': telegram_group_id,
-        'type': 'shift'
-        }):
-        yield record
+        'type': 'shift'})
 
 
 def add_shift(session, telegram_group_id, us_name: str, us_ordering: int) -> Result:
