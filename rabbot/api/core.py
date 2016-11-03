@@ -1,32 +1,31 @@
 """API for interacting with database."""
-from typing import Iterable, Dict
-import pymongo
+from pymongo import MongoClient
+from pymongo.cursor import Cursor
 from bson.objectid import ObjectId
-from .helpers import Result, validate_ordering, validate_shift_name
-from .errors import *
+from .helpers import InvalidInput, validate_ordering, validate_shift_name
 
 
-client = pymongo.MongoClient()
+client = MongoClient()
 db = client.white_rabbot
 
 
-def get_shift_by_name(telegram_group_id: int, shift_name: str) -> Iterable[Dict]:
+def get_shift_by_name(telegram_group_id: int, shift_name: str) -> Cursor:
     """Fetch shift by name."""
     validate_shift_name(shift_name)
-    yield from db.records.find_one({
+    return db.records.find_one({
         'telegram_group_id': telegram_group_id,
         'name': shift_name,
         'type': 'shift'})
 
 
-def list_shifts(telegram_group_id: int) -> Iterable[Dict]:
+def list_shifts(telegram_group_id: int) -> Cursor:
     """List all shifts belonging to the telegram group."""
-    yield from db.records.find({
+    return db.records.find({
         'telegram_group_id': telegram_group_id,
         'type': 'shift'})
 
 
-def add_shift(session, telegram_group_id, us_name: str, us_ordering: int) -> Result:
+def add_shift(telegram_group_id: int, name: str, ordering: int) -> None:
     """Add a new shift to the session."""
     # scenarios
     # - name already exists for this group_id
@@ -38,63 +37,36 @@ def add_shift(session, telegram_group_id, us_name: str, us_ordering: int) -> Res
     # - ordering cannot be converted to int
     #   -> "please use a whole number" for ordering
     # - everything is fine and dandy
-    #   -> return added shift
+    #   -> add shift to database
 
-    ordering_result = validate_ordering(us_ordering)
-    shift_name_result = validate_shift_name(us_name)
-    schedule_result = get_schedule(session, telegram_group_id)
-    shift_exists_result = get_shift_by_name(session, telegram_group_id, us_name)
-    result = Result(message="Shift successfully created")
-    result.success = all([
-        ordering_result.success,
-        shift_name_result.success,
-        schedule_result.success,
-        not shift_exists_result.success])
-    if result.success:
-        shift = Shift(
-            schedule=schedule_result.value,
-            name=shift_name_result.value,
-            ordering=ordering_result.value)
-        session.add(shift)
-        session.flush()
-        result.value = shift
-    else:
-        result.errors = (
-            ordering_result.errors + shift_name_result.errors + schedule_result.errors)
-        if shift_exists_result.success:
-            result.errors.append(
-                "There is already a shift with the name {} in this group".format(
-                    shift_name_result.value))
-    return result
+    validate_ordering(ordering)
+    validate_shift_name(name)
 
+    if get_shift_by_name(telegram_group_id, name).count() > 0:
+        raise InvalidInput(
+            "There is already a shift named {} in this group".format(name))
 
-def delete_shift(session, shift_id) -> Result:
-    """Delete shift."""
-    shift_result = get_shift_by_id(session, shift_id)
-    result = Result(message="Shift deleted")
-    if shift_result.success:
-        session.delete(shift_result.value)
-        session.flush()
-    else:
-        result.success = False
-        result.errors = shift_result.errors
-    return result
+    # TODO: check on result
+    db.records.insert_one({
+        '_id': ObjectId(),
+        'type': 'shift',
+        'telegram_group_id': telegram_group_id,
+        'ordering': ordering,
+        'name': name})
 
+def delete_record(record_id: ObjectId) -> None:
+    """Delete record."""
+    # TODO: check on result
+    db.records.delete_one({'_id': record_id})
 
-def edit_shift(session, shift_id, us_name, us_ordering) -> Result:
+def edit_shift(shift_id: ObjectId, name: str, ordering: int) -> None:
     """Edit existing shift."""
-    name_result = validate_shift_name(us_name)
-    ordering_result = validate_ordering(us_ordering)
-    shift_result = get_shift_by_id(session, shift_id)
-    result = Result(message="Shift successfully edited")
-    result.success = all([name_result.success, ordering_result.success, shift_result.success])
-    if result.success:
-        shift_result.value.name = us_name
-        shift_result.value.ordering = us_ordering
-        result.value = shift_result.value
-    else:
-        result.errors = name_result.errors + ordering_result.errors + shift_result.errors
-    return result
+    validate_shift_name(name)
+    validate_ordering(ordering)
+    # TODO: check on result
+    db.records.update_one(
+        {'_id': shift_id},
+        {'$set': {'name': name, 'ordering': ordering}})
 
 
 def get_user(session, telegram_user_id) -> Result:
