@@ -83,65 +83,6 @@ def get_user(session, telegram_user_id) -> Result:
             MoreThan1UserWithTelegramUserIdError(telegram_user_id)])
 
 
-def get_schedule_by_id(session, schedule_id) -> Result:
-    """Fetch schedule by id."""
-    result = Result()
-    schedules = session.query(Schedule).filter_by(
-        schedule_id=schedule_id).all()
-    if len(schedules) == 0:
-        result.success = False
-        result.errors.append(NoScheduleWithIdError(schedule_id))
-    elif len(schedules) == 1:
-        result.value = schedules[0]
-    else:
-        result.success = False
-        result.errors.append(MoreThan1ScheduleWithIdError(schedule_id))
-    return result
-
-
-def get_schedule(session, telegram_group_id) -> Result:
-    """Fetch schedule by telegram group ID."""
-    result = Result()
-    schedules = session.query(Schedule).filter_by(
-        telegram_group_id=telegram_group_id).all()
-    if len(schedules) == 0:
-        result.success = False
-        result.errors.append(NoScheduleWithTelegramGroupIdError(telegram_group_id))
-    elif len(schedules) == 1:
-        result.value = schedules[0]
-    else:
-        result.success = False
-        result.errors.append(
-            MoreThan1ScheduleWithTelegramGroupIdError(telegram_group_id))
-    return result
-
-
-def add_schedule(session, telegram_group_id, telegram_admin_id) -> Result:
-    """Create schedule."""
-    admin_result = get_user(session, telegram_admin_id)
-    if admin_result.success:
-        schedule = Schedule(
-            telegram_group_id=telegram_group_id,
-            admin_id=admin_result.value.user_id)
-        session.add(schedule)
-        session.flush()
-        return Result(value=schedule)
-    return Result(success=False, errors=admin_result.errors)
-
-
-def delete_schedule(session, schedule_id) -> Result:
-    """Delete schedule."""
-    schedule_result = get_schedule_by_id(session, schedule_id)
-    result = Result(message="Schedule deleted")
-    if schedule_result.success:
-        session.delete(schedule_result.value)
-        # TODO: delete shifts and mutations belonging to schedule
-        session.flush()
-    else:
-        result.success = False
-        result.errors = schedule_result.errors
-    return result
-
 
 def add_user_to_schedule(session, telegram_user_id, telegram_group_id) -> Result:
     """Add user to schedule."""
