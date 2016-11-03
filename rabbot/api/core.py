@@ -1,7 +1,7 @@
 """API for interacting with database."""
+from typing import Iterable, Dict
 import pymongo
 from bson.objectid import ObjectId
-from typing import Option, Iterable, Dict
 from .helpers import Result, validate_ordering, validate_shift_name
 from .errors import *
 
@@ -10,20 +10,18 @@ client = pymongo.MongoClient()
 db = client.white_rabbot
 
 
-def get_shift_by_name(session, telegram_group_id, us_shift_name: str) -> Option[Dict]:
+def get_shift_by_name(telegram_group_id: int, shift_name: str) -> Iterable[Dict]:
     """Fetch shift by name."""
-    shift_name_result = validate_shift_name(us_shift_name)
-    if not shift_name_result.success:
-        return None
-    return db.records.fetch_one({
+    validate_shift_name(shift_name)
+    yield from db.records.find_one({
         'telegram_group_id': telegram_group_id,
-        'name': shift_name_result.value,
+        'name': shift_name,
         'type': 'shift'})
 
 
 def list_shifts(telegram_group_id: int) -> Iterable[Dict]:
     """List all shifts belonging to the telegram group."""
-    yield from db.records.fetch({
+    yield from db.records.find({
         'telegram_group_id': telegram_group_id,
         'type': 'shift'})
 
