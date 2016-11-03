@@ -83,15 +83,9 @@ def get_user(session, telegram_user_id) -> Result:
             MoreThan1UserWithTelegramUserIdError(telegram_user_id)])
 
 
-
-def add_user_to_schedule(session, telegram_user_id, telegram_group_id) -> Result:
+def add_user_to_group(telegram_user_id: int, telegram_group_id: int) -> None:
     """Add user to schedule."""
-    user_result = get_user(session, telegram_user_id)
-    schedule_result = get_schedule(session, telegram_group_id)
-    if user_result.success and schedule_result.success:
-        schedule_result.value.users.append(user_result.value)
-        return Result(message="User added to schedule.")
-    else:
-        return Result(
-            success=False,
-            errors=user_result.errors + schedule_result.errors)
+    # TODO: check on result
+    db.record.update_one(
+        {'type': 'user', 'telegram_user_id': telegram_user_id},
+        {'$addToSet': {'groups': telegram_group_id}})
