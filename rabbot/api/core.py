@@ -1,6 +1,6 @@
 """API for interacting with database."""
 from typing import Optional, Dict
-from datetime import date
+from datetime import datetime
 
 from pymongo import MongoClient
 from pymongo.cursor import Cursor
@@ -103,8 +103,8 @@ def add_or_edit_user(telegram_user_id: int, user_name: str) -> None:
 
 def list_mutations(
         telegram_group_id: int,
-        start_date: Optional[date]=None,
-        end_date: Optional[date]=None) -> Cursor:
+        start_date: Optional[datetime]=None,
+        end_date: Optional[datetime]=None) -> Cursor:
     """List all mutations in date range belonging to the telegram group."""
     query = {
         'telegram_group_id': telegram_group_id,
@@ -120,7 +120,7 @@ def list_mutations(
 def add_mutation(
         telegram_group_id: int,
         owner_tuid: int,
-        mutation_date: date,
+        date: datetime,
         shift_id: ObjectId) -> None:
     """Add new mutation to database."""
     validate_insert_one_result(db.records.insert_one({
@@ -128,7 +128,7 @@ def add_mutation(
         'type': 'mutation',
         'telegram_group_id': telegram_group_id,
         'owner_tuid': owner_tuid,
-        'date': mutation_date,
+        'date': date,
         'shift_id': shift_id}))
 
 def add_substitute_to_mutation(mutation_id: ObjectId, sub_tuid: int) -> None:

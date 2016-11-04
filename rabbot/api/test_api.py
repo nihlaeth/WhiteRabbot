@@ -1,5 +1,6 @@
 """Tests for the API's public functions."""
 # pylint: disable=missing-docstring, invalid-name
+from datetime import datetime
 from nose.tools import assert_equals
 
 import rabbot.api.core as api
@@ -80,3 +81,11 @@ class TestAPI():
             user = api.get_user(1)
             assert_equals(len(user['groups']), 1)
             assert_equals(user['groups'][0], 5)
+
+    def test_add_mutation(self):
+        with DummyDB() as db:
+            api.db = db
+            api.add_shift(1, "testshift", 1)
+            shift = api.get_shift_by_name(1, "testshift")
+            api.add_mutation(1, 1, datetime(2016, 1, 1), shift['_id'])
+            assert_equals(db.records.find().count(), 2)
