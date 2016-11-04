@@ -29,3 +29,10 @@ class TestShifts():
             assert_equals(
                 db.records.find().count(),
                 0)
+
+    def test_get_shift_by_name(self):
+        with DummyDB() as db:
+            api.db = db
+            api.add_shift(1, "test", 1)
+            shift = api.get_shift_by_name(1, "test")
+            assert_equals(shift['name'], "test")

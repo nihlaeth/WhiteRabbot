@@ -1,5 +1,5 @@
 """API for interacting with database."""
-from typing import Optional
+from typing import Optional, Dict
 from datetime import date
 
 from pymongo import MongoClient
@@ -18,7 +18,7 @@ client = MongoClient()
 db = client.white_rabbot
 
 
-def get_shift_by_name(telegram_group_id: int, shift_name: str) -> Cursor:
+def get_shift_by_name(telegram_group_id: int, shift_name: str) -> Optional[Dict]:
     """Fetch shift by name."""
     validate_name(shift_name)
     return db.records.find_one({
