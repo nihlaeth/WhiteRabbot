@@ -2,7 +2,13 @@
 from pymongo import MongoClient
 from pymongo.cursor import Cursor
 from bson.objectid import ObjectId
-from .helpers import InvalidInput, validate_ordering, validate_name
+from .helpers import (
+    InvalidInput,
+    validate_ordering,
+    validate_name,
+    validate_delete_result,
+    validate_insert_one_result,
+    validate_update_result)
 
 
 client = MongoClient()
@@ -46,47 +52,42 @@ def add_shift(telegram_group_id: int, name: str, ordering: int) -> None:
         raise InvalidInput(
             "There is already a shift named {} in this group".format(name))
 
-    # TODO: check on result
-    db.records.insert_one({
+    validate_insert_one_result(db.records.insert_one({
         '_id': ObjectId(),
         'type': 'shift',
         'telegram_group_id': telegram_group_id,
         'ordering': ordering,
-        'name': name})
+        'name': name}))
 
 def delete_record(record_id: ObjectId) -> None:
     """Delete record."""
-    # TODO: check on result
-    db.records.delete_one({'_id': record_id})
+    validate_delete_result(db.records.delete_one({'_id': record_id}))
 
 def edit_shift(shift_id: ObjectId, name: str, ordering: int) -> None:
     """Edit existing shift."""
     validate_name(name)
     validate_ordering(ordering)
-    # TODO: check on result
-    db.records.update_one(
+    validate_update_result(db.records.update_one(
         {'_id': shift_id},
-        {'$set': {'name': name, 'ordering': ordering}})
+        {'$set': {'name': name, 'ordering': ordering}}))
 
 
 def get_user(telegram_user_id: int) -> Cursor:
     """Fetch user by telegram user id."""
-    # TODO: check on result
     return db.records.find_one({
         'type': 'user',
         'telegram_user_id':telegram_user_id})
 
 def add_user_to_group(telegram_user_id: int, telegram_group_id: int) -> None:
     """Add user to schedule."""
-    # TODO: check on result
-    db.record.update_one(
+    validate_update_result(db.record.update_one(
         {'type': 'user', 'telegram_user_id': telegram_user_id},
-        {'$addToSet': {'groups': telegram_group_id}})
+        {'$addToSet': {'groups': telegram_group_id}}))
 
 def add_or_edit_user(telegram_user_id: int, user_name: str) -> None:
     """Create new user, or change name associated with telegram_user_id."""
     validate_name(user_name)
-    db.record.update_one(
+    validate_update_result(db.record.update_one(
         {'type': 'user', 'telegram_user_id': telegram_user_id},
         {'$set': {'name': user_name}},
-        upsert=True)
+        upsert=True))
