@@ -8,7 +8,7 @@ def validate_ordering(ordering) -> None:
         raise InvalidInput('Ordering should be an integer, and not {}')
 
 
-def validate_shift_name(name: str) -> None:
+def validate_name(name: str) -> None:
     """Raise InvalidInput if name is not valid."""
     if not isinstance(name, str):
         raise InvalidInput('Shift name must be a string')

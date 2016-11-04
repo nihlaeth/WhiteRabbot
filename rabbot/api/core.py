@@ -2,7 +2,7 @@
 from pymongo import MongoClient
 from pymongo.cursor import Cursor
 from bson.objectid import ObjectId
-from .helpers import InvalidInput, validate_ordering, validate_shift_name
+from .helpers import InvalidInput, validate_ordering, validate_name
 
 
 client = MongoClient()
@@ -11,7 +11,7 @@ db = client.white_rabbot
 
 def get_shift_by_name(telegram_group_id: int, shift_name: str) -> Cursor:
     """Fetch shift by name."""
-    validate_shift_name(shift_name)
+    validate_name(shift_name)
     return db.records.find_one({
         'telegram_group_id': telegram_group_id,
         'name': shift_name,
@@ -40,7 +40,7 @@ def add_shift(telegram_group_id: int, name: str, ordering: int) -> None:
     #   -> add shift to database
 
     validate_ordering(ordering)
-    validate_shift_name(name)
+    validate_name(name)
 
     if get_shift_by_name(telegram_group_id, name).count() > 0:
         raise InvalidInput(
@@ -61,7 +61,7 @@ def delete_record(record_id: ObjectId) -> None:
 
 def edit_shift(shift_id: ObjectId, name: str, ordering: int) -> None:
     """Edit existing shift."""
-    validate_shift_name(name)
+    validate_name(name)
     validate_ordering(ordering)
     # TODO: check on result
     db.records.update_one(
