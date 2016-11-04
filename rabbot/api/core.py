@@ -110,3 +110,23 @@ def list_mutations(
     if end_date is not None:
         query['date'] = {'$lte': end_date}
     return db.records.find(query)
+
+def add_mutation(
+        telegram_group_id: int,
+        owner_tuid: int,
+        mutation_date: date,
+        shift_id: ObjectId) -> None:
+    """Add new mutation to database."""
+    validate_insert_one_result(db.records.insert_one({
+        '_id': ObjectId(),
+        'type': 'mutation',
+        'telegram_group_id': telegram_group_id,
+        'owner_tuid': owner_tuid,
+        'date': mutation_date,
+        'shift_id': shift_id}))
+
+def add_substitute_to_mutation(mutation_id: ObjectId, sub_tuid: int) -> None:
+    """Fill open mutation."""
+    validate_update_result(db.records.update_one(
+        {'_id': mutation_id, 'type': 'mutation'},
+        {'sub_tuid': sub_tuid}))
