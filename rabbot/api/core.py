@@ -135,4 +135,4 @@ def add_substitute_to_mutation(mutation_id: ObjectId, sub_tuid: int) -> None:
     """Fill open mutation."""
     validate_update_result(db.records.update_one(
         {'_id': mutation_id, 'type': 'mutation'},
-        {'sub_tuid': sub_tuid}))
+        {'$set': {'sub_tuid': sub_tuid}}))

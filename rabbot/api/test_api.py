@@ -89,3 +89,14 @@ class TestAPI():
             shift = api.get_shift_by_name(1, "testshift")
             api.add_mutation(1, 1, datetime(2016, 1, 1), shift['_id'])
             assert_equals(db.records.find().count(), 2)
+
+    def test_add_substitute_to_mutation(self):
+        with DummyDB() as db:
+            api.db = db
+            api.add_shift(1, "testshift", 1)
+            shift = api.get_shift_by_name(1, "testshift")
+            api.add_mutation(1, 1, datetime(2016, 1, 1), shift['_id'])
+            mutation = db.records.find_one({'type': 'mutation'})
+            api.add_substitute_to_mutation(mutation['_id'], 2)
+            mutation = db.records.find_one({'type': 'mutation'})
+            assert_equals(mutation['sub_tuid'], 2)
