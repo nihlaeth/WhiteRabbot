@@ -82,10 +82,16 @@ def get_user(telegram_user_id: int) -> Cursor:
         'telegram_user_id':telegram_user_id})
 
 def add_user_to_group(telegram_user_id: int, telegram_group_id: int) -> None:
-    """Add user to schedule."""
+    """Add user to group."""
     validate_update_result(db.records.update_one(
         {'type': 'user', 'telegram_user_id': telegram_user_id},
         {'$addToSet': {'groups': telegram_group_id}}))
+
+def remove_user_from_group(telegram_user_id: int, telegram_group_id: int) -> None:
+    """Remove user from group."""
+    validate_update_result(db.records.update_one(
+        {'type': 'user', 'telegram_user_id': telegram_user_id},
+        {'$pull': {'groups': telegram_group_id}}))
 
 def add_or_edit_user(telegram_user_id: int, user_name: str) -> None:
     """Create new user, or change name associated with telegram_user_id."""
