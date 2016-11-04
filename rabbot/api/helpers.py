@@ -1,3 +1,4 @@
+"""Helper functions for api."""
 from pymongo.results import UpdateResult, InsertOneResult, DeleteResult
 
 class InvalidInput(Exception):

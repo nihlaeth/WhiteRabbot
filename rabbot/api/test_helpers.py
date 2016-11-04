@@ -1,31 +1,27 @@
-from nose.tools import assert_equals
+# pylint: disable=protected-access,missing-docstring
+from nose.tools import assert_raises
 
-from . import helpers
+from rabbot.api.helpers import validate_ordering, validate_name, InvalidInput
 
-# pylint: disable=protected-access
-class Test_validate_ordering():
+class TestValidateOrdering():
 
     def test_valid_data(self):
-        result = helpers.validate_ordering(1)
-        assert_equals(result.success, True)
-        assert_equals(result.value, 1)
+        validate_ordering(1)
 
     def test_non_int(self):
-        result = helpers.validate_ordering("not an int")
-        assert_equals(result.success, False)
+        with assert_raises(InvalidInput):
+            validate_ordering("not an int")
 
 
-class Test_validate_shift_name():
+class TestValidateName():
 
     def test_valid_data(self):
-        result = helpers.validate_shift_name("test")
-        assert_equals(result.success, True)
-        assert_equals(result.value, "test")
+        validate_name("test")
 
     def test_non_str(self):
-        result = helpers.validate_shift_name(0)
-        assert_equals(result.success, False)
+        with assert_raises(InvalidInput):
+            validate_name(0)
 
     def test_empty_str(self):
-        result = helpers.validate_shift_name("")
-        assert_equals(result.success, False)
+        with assert_raises(InvalidInput):
+            validate_name("")
