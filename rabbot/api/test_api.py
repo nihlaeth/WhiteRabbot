@@ -36,3 +36,12 @@ class TestShifts():
             api.add_shift(1, "test", 1)
             shift = api.get_shift_by_name(1, "test")
             assert_equals(shift['name'], "test")
+
+    def test_list_shifts(self):
+        with DummyDB() as db:
+            api.db = db
+            api.add_shift(1, "1", 1)
+            api.add_shift(1, "2", 2)
+            api.add_shift(2, "1", 1)
+            result = api.list_shifts(1)
+            assert_equals(result.count(), 2)
