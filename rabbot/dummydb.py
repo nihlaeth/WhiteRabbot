@@ -1,7 +1,7 @@
 """Empty database context manager to simplify testing."""
 from pymongo import MongoClient
 
-_client = MongoClient()
+client = MongoClient()
 
 # pylint: disable=too-few-public-methods,missing-docstring
 class DummyDB(object):
@@ -10,7 +10,7 @@ class DummyDB(object):
 
     def __init__(self):
         """Create database."""
-        self._db = _client.test_white_rabbot
+        self._db = client.test_white_rabbot
 
     def __enter__(self):
         """Return db."""
@@ -18,4 +18,4 @@ class DummyDB(object):
 
     def __exit__(self, e_type, e_value, traceback):
         """Destroy database."""
-        _client.drop_database('test_white_rabbot')
+        client.drop_database('test_white_rabbot')
