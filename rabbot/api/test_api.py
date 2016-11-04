@@ -19,3 +19,13 @@ class TestShifts():
             assert_equals(
                 db.records.find().count(),
                 1)
+
+    def test_delete_record(self):
+        with DummyDB() as db:
+            api.db = db
+            api.add_shift(1, "test", 1)
+            shift = db.records.find_one()
+            api.delete_record(shift['_id'])
+            assert_equals(
+                db.records.find().count(),
+                0)

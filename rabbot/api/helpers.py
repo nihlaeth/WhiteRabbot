@@ -29,11 +29,11 @@ def validate_delete_result(result: DeleteResult, count: int=1) -> None:
     """Check everything went ok at the db side."""
     if not result.acknowledged:
         raise DBError("Unable to update record.")
-    if result.delete_count != count:
+    if result.deleted_count != count:
         raise DataWarning(
             "expected delete_count of {}, but got {}".format(
                 count,
-                result.delete_count))
+                result.deleted_count))
 
 def validate_insert_one_result(result: InsertOneResult) -> None:
     """Check everything went ok at the db side."""
