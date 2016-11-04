@@ -82,3 +82,11 @@ def add_user_to_group(telegram_user_id: int, telegram_group_id: int) -> None:
     db.record.update_one(
         {'type': 'user', 'telegram_user_id': telegram_user_id},
         {'$addToSet': {'groups': telegram_group_id}})
+
+def add_or_edit_user(telegram_user_id: int, user_name: str) -> None:
+    """Create new user, or change name associated with telegram_user_id."""
+    validate_name(user_name)
+    db.record.update_one(
+        {'type': 'user', 'telegram_user_id': telegram_user_id},
+        {'$set': {'name': user_name}},
+        upsert=True)
