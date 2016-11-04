@@ -53,3 +53,10 @@ class TestAPI():
             assert_equals(db.records.find().count(), 1)
             api.add_or_edit_user(1, "better name")
             assert_equals(db.records.find().count(), 1)
+
+    def test_get_user(self):
+        with DummyDB() as db:
+            api.db = db
+            api.add_or_edit_user(1, "testuser")
+            result = api.get_user(1)
+            assert_equals(result['name'], "testuser")
