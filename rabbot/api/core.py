@@ -83,7 +83,7 @@ def get_user(telegram_user_id: int) -> Cursor:
 
 def add_user_to_group(telegram_user_id: int, telegram_group_id: int) -> None:
     """Add user to schedule."""
-    validate_update_result(db.record.update_one(
+    validate_update_result(db.records.update_one(
         {'type': 'user', 'telegram_user_id': telegram_user_id},
         {'$addToSet': {'groups': telegram_group_id}}))
 

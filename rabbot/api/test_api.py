@@ -60,3 +60,12 @@ class TestAPI():
             api.add_or_edit_user(1, "testuser")
             result = api.get_user(1)
             assert_equals(result['name'], "testuser")
+
+    def test_add_user_to_group(self):
+        with DummyDB() as db:
+            api.db = db
+            api.add_or_edit_user(1, "testuser")
+            api.add_user_to_group(1, 24)
+            user = api.get_user(1)
+            assert_equals(len(user['groups']), 1)
+            assert_equals(user['groups'][0], 24)
