@@ -5,9 +5,9 @@ from nose.tools import assert_equals
 import rabbot.api.core as api
 from rabbot.dummydb import DummyDB, client
 
-class TestShifts():
+class TestAPI():
 
-    """Test all shift functions."""
+    """Test all api functions."""
 
     def __init__(self):
         api.client = client
@@ -45,3 +45,11 @@ class TestShifts():
             api.add_shift(2, "1", 1)
             result = api.list_shifts(1)
             assert_equals(result.count(), 2)
+
+    def test_add_or_edit_user(self):
+        with DummyDB() as db:
+            api.db = db
+            api.add_or_edit_user(1, "1")
+            assert_equals(db.records.find().count(), 1)
+            api.add_or_edit_user(1, "better name")
+            assert_equals(db.records.find().count(), 1)
