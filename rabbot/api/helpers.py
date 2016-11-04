@@ -27,7 +27,7 @@ def validate_name(name: str) -> None:
 
 def validate_delete_result(result: DeleteResult, count: int=1) -> None:
     """Check everything went ok at the db side."""
-    if not result.acknowleged:
+    if not result.acknowledged:
         raise DBError("Unable to update record.")
     if result.delete_count != count:
         raise DataWarning(
@@ -37,12 +37,12 @@ def validate_delete_result(result: DeleteResult, count: int=1) -> None:
 
 def validate_insert_one_result(result: InsertOneResult) -> None:
     """Check everything went ok at the db side."""
-    if not result.acknowleged:
+    if not result.acknowledged:
         raise DBError("Unable to update record.")
 
 def validate_update_result(result: UpdateResult) -> None:
     """Check everything went ok at the db side."""
-    if not result.acknowleged:
+    if not result.acknowledged:
         raise DBError("Unable to update record.")
     if result.upserted_id is None and result.matched_count < 1:
         raise DataWarning("No matches found in database.")

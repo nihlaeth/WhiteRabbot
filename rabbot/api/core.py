@@ -51,7 +51,7 @@ def add_shift(telegram_group_id: int, name: str, ordering: int) -> None:
     validate_ordering(ordering)
     validate_name(name)
 
-    if get_shift_by_name(telegram_group_id, name).count() > 0:
+    if get_shift_by_name(telegram_group_id, name) is not None:
         raise InvalidInput(
             "There is already a shift named {} in this group".format(name))
 
