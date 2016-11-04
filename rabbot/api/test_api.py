@@ -100,3 +100,29 @@ class TestAPI():
             api.add_substitute_to_mutation(mutation['_id'], 2)
             mutation = db.records.find_one({'type': 'mutation'})
             assert_equals(mutation['sub_tuid'], 2)
+
+    def test_list_mutations(self):
+        with DummyDB() as db:
+            api.db = db
+            api.add_shift(1, "nomatch", 1)
+            api.add_shift(1, "match", 1)
+            nomatch = api.get_shift_by_name(1, "nomatch")
+            match = api.get_shift_by_name(1, "match")
+            api.add_mutation(1, 1, datetime(2016, 1, 1), nomatch['_id'])
+            api.add_mutation(1, 1, datetime(2016, 1, 2), match['_id'])
+            api.add_mutation(1, 1, datetime(2016, 1, 3), match['_id'])
+            api.add_mutation(1, 1, datetime(2016, 1, 4), match['_id'])
+            api.add_mutation(1, 1, datetime(2016, 1, 5), nomatch['_id'])
+            result = api.list_mutations(1)
+            assert_equals(result.count(), 5)
+            result = api.list_mutations(1, start_date=datetime(2016, 1, 2))
+            assert_equals(result.count(), 4)
+            result = api.list_mutations(1, end_date=datetime(2016, 1, 2))
+            assert_equals(result.count(), 2)
+            result = api.list_mutations(
+                1,
+                start_date=datetime(2016, 1, 2),
+                end_date=datetime(2016, 1, 4))
+            assert_equals(result.count(), 3)
+            for doc in result:
+                assert_equals(doc['shift_id'], match['_id'])

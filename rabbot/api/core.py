@@ -13,7 +13,6 @@ from .helpers import (
     validate_insert_one_result,
     validate_update_result)
 
-
 client = MongoClient()
 db = client.white_rabbot
 
@@ -109,11 +108,11 @@ def list_mutations(
     query = {
         'telegram_group_id': telegram_group_id,
         'type': 'mutation'}
-    if start_date is not None:
-        query['date'] = {'$gre': start_date}
     if start_date is not None and end_date is not None:
-        query['date']['$lte'] = end_date
-    if end_date is not None:
+        query['date'] = {'$gte': start_date, '$lte': end_date}
+    elif start_date is not None:
+        query['date'] = {'$gte': start_date}
+    elif end_date is not None:
         query['date'] = {'$lte': end_date}
     return db.records.find(query)
 
