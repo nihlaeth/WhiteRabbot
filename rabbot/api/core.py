@@ -69,19 +69,12 @@ def edit_shift(shift_id: ObjectId, name: str, ordering: int) -> None:
         {'$set': {'name': name, 'ordering': ordering}})
 
 
-def get_user(session, telegram_user_id) -> Result:
+def get_user(telegram_user_id: int) -> Cursor:
     """Fetch user by telegram user id."""
-    users = session.query(User).filter_by(
-        telegram_user_id=telegram_user_id).all()
-    if len(users) == 0:
-        return Result(success=False, errors=[
-            NoUserWithTelegramUserIdError(telegram_user_id)])
-    elif len(users) == 1:
-        return Result(value=users[0])
-    else:
-        return Result(success=False, errors=[
-            MoreThan1UserWithTelegramUserIdError(telegram_user_id)])
-
+    # TODO: check on result
+    return db.records.find_one({
+        'type': 'user',
+        'telegram_user_id':telegram_user_id})
 
 def add_user_to_group(telegram_user_id: int, telegram_group_id: int) -> None:
     """Add user to schedule."""
