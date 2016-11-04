@@ -1,4 +1,7 @@
 """API for interacting with database."""
+from typing import Optional
+from datetime import date
+
 from pymongo import MongoClient
 from pymongo.cursor import Cursor
 from bson.objectid import ObjectId
@@ -91,3 +94,19 @@ def add_or_edit_user(telegram_user_id: int, user_name: str) -> None:
         {'type': 'user', 'telegram_user_id': telegram_user_id},
         {'$set': {'name': user_name}},
         upsert=True))
+
+def list_mutations(
+        telegram_group_id: int,
+        start_date: Optional[date]=None,
+        end_date: Optional[date]=None) -> Cursor:
+    """List all mutations in date range belonging to the telegram group."""
+    query = {
+        'telegram_group_id': telegram_group_id,
+        'type': 'mutation'}
+    if start_date is not None:
+        query['date'] = {'$gre': start_date}
+    if start_date is not None and end_date is not None:
+        query['date']['$lte'] = end_date
+    if end_date is not None:
+        query['date'] = {'$lte': end_date}
+    return db.records.find(query)
