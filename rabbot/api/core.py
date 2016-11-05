@@ -74,7 +74,7 @@ def edit_shift(shift_id: ObjectId, name: str, ordering: int) -> None:
         {'$set': {'name': name, 'ordering': ordering}}))
 
 
-def get_user(telegram_user_id: int) -> Cursor:
+def get_user(telegram_user_id: int) -> Optional[Dict]:
     """Fetch user by telegram user id."""
     return db.records.find_one({
         'type': 'user',
